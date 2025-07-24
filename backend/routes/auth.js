@@ -52,5 +52,21 @@ router.post("/login", async (req, res) => {
   }
 
 });
+router.get("/test-login", async (req, res) => {
+  try {
+    const user = {
+      username: "db",
+      password: "$2a$10$..." // use actual hashed value from DB
+    };
+    const isValid = await bcrypt.compare("db", user.password);
+    if (!isValid) return res.status(401).json({ error: "Invalid password" });
+
+    const token = jwt.sign({ user: user.username }, process.env.JWT_SECRET_KEY);
+    res.json({ token });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
 module.exports = router;
