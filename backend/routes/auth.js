@@ -46,7 +46,8 @@ router.post("/login", async (req, res) => {
   if (err.code === 'ECONNREFUSED') {
     return res.status(500).json({ error: "Cannot connect to database." });
   }
-
+  
+  console.error("Login error:", err.message || err);
   return res.status(500).json({ error: "Login service temporarily unavailable. Please try again later." });
   }
 
