@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./app",               // Enables absolute imports
+    "paths": {
+      "@/*": ["*"]              // Now "@/styles/globals.css" resolves to "frontend/styles/globals.css"
+    }
+  }
+}
