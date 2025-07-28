@@ -36,7 +36,7 @@ export default function CustomerFormPage() {
 
       {submitted ? (
         <div className="bg-green-100 text-green-800 p-4 rounded shadow">
-          Thank you! We've received your project details.
+          Thank you! We&apos;ve received your project details.
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded shadow">
