@@ -1,5 +1,5 @@
 #!/bin/bash
-# Script to remove git lock files safely
+# Script to remove git lock files safely ok new test
 
 LOCKFILE=".git/refs/remotes/origin/main.lock"
 
