@@ -1,165 +1,197 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 
-export default function CustomerFormPage() {
+export default function ProjectInfoForm() {
   const [formData, setFormData] = useState({
     fullName: "",
     phone: "",
     email: "",
-    projectLocation: "",
-    houseType: "",
-    storeys: "",
-    budget: "",
-    timeline: "",
-    specialRequirements: "",
+    date: "",
+    province: "",
+    district: "",
+    municipality: "",
+    ward: "",
+    street: "",
+    houseNo: "",
+    projectType: "",
+    projectTypeOther: "",
+    landArea: "",
+    squareFootage: "",
+    projectScope: "",
+    completionDate: "",
+    vision: "",
   });
 
-  const [submitted, setSubmitted] = useState(false);
-
   const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: type === "checkbox" ? checked : value,
     });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Submitted project info:", formData);
-    setSubmitted(true);
+    console.log(formData);
   };
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Preliminary Project Form</h1>
-
-      {submitted ? (
-        <div className="bg-green-100 text-green-800 p-4 rounded shadow">
-          Thank you! We&apos;ve received your project details.
+    <div className="max-w-6xl mx-auto p-4 sm:p-6 shadow-xl border border-gray-200">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row overflow-hidden rounded-xl shadow-md mb-10">
+        {/* Left: Text */}
+        <div className="flex-1 bg-white px-6 py-8 flex flex-col justify-center text-center sm:text-left">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[#1e2d4d] tracking-tight leading-tight">
+            PROJECT INFO
+          </h1>
+          <p className="text-gray-600 mt-4 text-base sm:text-lg lg:text-xl font-medium leading-relaxed">
+            To apply for a project with us, kindly complete this form with accurate information.
+          </p>
         </div>
-      ) : (
-        <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded shadow">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Full Name</label>
-              <input
-                type="text"
-                name="fullName"
-                required
-                value={formData.fullName}
-                onChange={handleChange}
-                className="w-full border rounded px-3 py-2"
+
+        {/* Right: Logo & Company Info */}
+        <div className="bg-[#1e2d4d] text-white flex items-center justify-center px-6 py-8 w-full sm:w-80">
+          <div className="flex flex-col items-center sm:items-end text-center sm:text-right w-full">
+            <div className="w-24 sm:w-28 lg:w-32 mb-3">
+              <img
+                src="/Logo-Bela.svg"
+                alt="Bela Nepal Logo"
+                className="w-full h-auto object-contain"
               />
             </div>
+            <div className="text-sm sm:text-base leading-snug space-y-1 break-words w-full">
+              <p className="font-semibold tracking-wide">Bela Nepal Pvt. Ltd.</p>
+              <p className="opacity-90">Chhauni-15, Kathmandu</p>
+              <p className="opacity-90">+977-9802375303</p>
+              <p className="opacity-90 break-all">info@belanepal.com</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Form */}
+      <form onSubmit={handleSubmit} className="space-y-10 text-sm">
+        <div>
+          <h2 className="text-md font-semibold bg-orange-500 text-white px-4 py-2 rounded">PRIMARY CONTACT INFORMATION :</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Phone</label>
-              <input
-                type="text"
-                name="phone"
-                required
-                value={formData.phone}
-                onChange={handleChange}
-                className="w-full border rounded px-3 py-2"
-              />
+              <label className="block text-sm font-medium text-gray-700 mb-1">Client’s / Organisation’s Full Name</label>
+              <input name="fullName" value={formData.fullName} onChange={handleChange} required className="input w-full" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Email</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full border rounded px-3 py-2"
-              />
+              <label className="block text-sm font-medium text-gray-700 mb-1">Phone No.</label>
+              <input name="phone" value={formData.phone} onChange={handleChange} required className="input w-full" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Project Location</label>
-              <input
-                type="text"
-                name="projectLocation"
-                required
-                value={formData.projectLocation}
-                onChange={handleChange}
-                className="w-full border rounded px-3 py-2"
-              />
+              <label className="block text-sm font-medium text-gray-700 mb-1">E-Mail</label>
+              <input name="email" value={formData.email} onChange={handleChange} required className="input w-full" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Type of House</label>
-              <select
-                name="houseType"
-                value={formData.houseType}
-                onChange={handleChange}
-                className="w-full border rounded px-3 py-2"
-              >
-                <option value="">Select Type</option>
-                <option value="Residential">Residential</option>
-                <option value="Commercial">Commercial</option>
-                <option value="School/Institution">School / Institution</option>
-                <option value="Other">Other</option>
-              </select>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+              <input name="date" type="date" value={formData.date} onChange={handleChange} required className="input w-full" />
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h2 className="text-md font-semibold bg-orange-500 text-white px-4 py-2 rounded">CONSTRUCTION SITE ADDRESS :</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Province</label>
+              <input name="province" value={formData.province} onChange={handleChange} className="input w-full" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Number of Storeys</label>
-              <select
-                name="storeys"
-                value={formData.storeys}
-                onChange={handleChange}
-                className="w-full border rounded px-3 py-2"
-              >
-                <option value="">Select</option>
-                <option value="1">1 Storey</option>
-                <option value="2">2 Storeys</option>
-                <option value="3">3 Storeys</option>
-                <option value="4+">4 or more</option>
-              </select>
+              <label className="block text-sm font-medium text-gray-700 mb-1">District</label>
+              <input name="district" value={formData.district} onChange={handleChange} className="input w-full" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Estimated Budget (NPR)</label>
-              <input
-                type="text"
-                name="budget"
-                value={formData.budget}
-                onChange={handleChange}
-                className="w-full border rounded px-3 py-2"
-              />
+              <label className="block text-sm font-medium text-gray-700 mb-1">Municipality / Rural Municipality</label>
+              <input name="municipality" value={formData.municipality} onChange={handleChange} className="input w-full" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Expected Timeline</label>
-              <select
-                name="timeline"
-                value={formData.timeline}
-                onChange={handleChange}
-                className="w-full border rounded px-3 py-2"
-              >
-                <option value="">Select</option>
-                <option value="1-3 months">1–3 months</option>
-                <option value="3-6 months">3–6 months</option>
-                <option value="6+ months">6+ months</option>
-                <option value="Not sure">Not sure</option>
-              </select>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Ward No.</label>
+              <input name="ward" value={formData.ward} onChange={handleChange} className="input w-full" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Tole / Street Name</label>
+              <input name="street" value={formData.street} onChange={handleChange} className="input w-full" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">House No. (or additional landmarks)</label>
+              <input name="houseNo" value={formData.houseNo} onChange={handleChange} className="input w-full" />
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h2 className="text-md font-semibold bg-orange-500 text-white px-4 py-2 rounded">PROJECT REQUIREMENTS :</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+            <div>
+              <label className="block mb-1 font-medium">Project Type :</label>
+              <div className="space-y-1">
+                <label className="flex items-center gap-2">
+                  <input type="radio" name="projectType" value="Residential" checked={formData.projectType === "Residential"} onChange={handleChange} className="accent-blue-600" /> Residential
+                </label>
+                <label className="flex items-center gap-2">
+                  <input type="radio" name="projectType" value="Commercial" checked={formData.projectType === "Commercial"} onChange={handleChange} className="accent-blue-600" /> Commercial
+                </label>
+                <label className="flex items-center gap-2">
+                  <input type="radio" name="projectType" value="Other" checked={formData.projectType === "Other"} onChange={handleChange} className="accent-blue-600" /> Other
+                </label>
+                {formData.projectType === "Other" && (
+                  <input type="text" name="projectTypeOther" value={formData.projectTypeOther} placeholder="Other (please specify)" onChange={handleChange} className="input w-full" />
+                )}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Total Land Area</label>
+              <input name="landArea" value={formData.landArea} onChange={handleChange} className="input w-full" />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Total Square Footage to be Constructed</label>
+              <input name="squareFootage" value={formData.squareFootage} onChange={handleChange} className="input w-full" />
+            </div>
+
+            <div>
+              <label className="block mb-1 font-medium">Project Scope :</label>
+              <div className="space-y-1">
+                <label className="flex items-center gap-2">
+                  <input type="radio" name="projectScope" value="New Build" checked={formData.projectScope === "New Build"} onChange={handleChange} className="accent-blue-600" /> New Build
+                </label>
+                <label className="flex items-center gap-2">
+                  <input type="radio" name="projectScope" value="Addition / Renovation" checked={formData.projectScope === "Addition / Renovation"} onChange={handleChange} className="accent-blue-600" /> Addition / Renovation
+                </label>
+                <label className="flex items-center gap-2">
+                  <input type="radio" name="projectScope" value="Other" checked={formData.projectScope === "Other"} onChange={handleChange} className="accent-blue-600" /> Other
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Desired Project Completion Date</label>
+              <input name="completionDate" type="date" value={formData.completionDate} onChange={handleChange} className="input w-full" />
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1">Special Requirements / Notes</label>
-            <textarea
-              name="specialRequirements"
-              rows={4}
-              value={formData.specialRequirements}
-              onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
-            ></textarea>
+          <div className="mt-6">
+            <label className="block mb-2 font-medium">Project Vision and Goals :</label>
+            <textarea name="vision" value={formData.vision} onChange={handleChange} rows={5} placeholder="Please describe your vision and goals for the completed project" className="w-full input" />
           </div>
 
-          <button
-            type="submit"
-            className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded"
-          >
+          <p className="text-sm text-gray-700 mt-3">
+            <strong>Note:</strong> Please attach a PDF or image of the land and/or building blueprint(s) to <a href="mailto:belanepal2025@gmail.com" className="text-blue-600 underline">belanepal2025@gmail.com</a>
+          </p>
+        </div>
+
+        <div className="text-center">
+          <button type="submit" className="bg-blue-700 hover:bg-blue-800 text-white py-2 px-6 rounded w-full sm:w-auto">
             Submit Project Info
           </button>
-        </form>
-      )}
+        </div>
+      </form>
     </div>
   );
 }
