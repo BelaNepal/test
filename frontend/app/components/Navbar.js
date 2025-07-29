@@ -48,7 +48,7 @@ export default function Navbar() {
         style={{ fontSize: scrolled ? "1.2rem" : "1.8rem", zIndex: 60 }}
       >
         <span className="typing-text text-blue-700 font-bold whitespace-nowrap">
-          Project - Bela IMS
+          Project - Bela IMS (Beta)
         </span>
       </div>
 
