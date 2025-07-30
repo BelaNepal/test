@@ -8,20 +8,25 @@ export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
 
+  const [isMounted, setIsMounted] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
-    setMobileMenuOpen(false); // close menu on route change
-  }, [pathname]);
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
+    if (isMounted) {
+      const token = localStorage.getItem("token");
+      setIsLoggedIn(!!token);
+      setMobileMenuOpen(false);
+    }
+  }, [pathname, isMounted]);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -32,52 +37,56 @@ export default function Navbar() {
     router.push("/");
   };
 
+  if (!isMounted) return null;
+
   if (isLoggedIn && (pathname === "/login" || pathname === "/register")) {
     return null;
   }
 
   return (
     <>
+      {/* Navbar */}
       <nav
-        className={`fixed top-0 left-0 w-full z-50 bg-white shadow-md transition-all duration-300 ${
-          scrolled ? "h-[50px]" : "h-[80px]"
-        }`}
+        className={`fixed top-0 left-0 w-full z-50 shadow-md transition-all duration-300 ${
+          scrolled ? "bg-[#1e2d4d]" : "bg-white"
+        } ${scrolled ? "h-[50px]" : "h-[80px]"}`}
       >
-        <div className="flex items-center justify-between h-full px-4 sm:px-6 lg:px-10">
-          {/* Logo */}
+        <div className="relative flex items-center justify-center h-full px-4 sm:px-6 lg:px-10">
+          
+          {/* Centered Logo */}
           <div
-            className="text-blue-700 font-bold whitespace-nowrap"
+            className={`absolute left-1/2 transform -translate-x-1/2 font-bold whitespace-nowrap transition-colors duration-300 ${
+              scrolled ? "text-white" : "text-[#1e2d4d]"
+            }`}
             style={{ fontSize: scrolled ? "1.2rem" : "1.6rem" }}
           >
             Project - Bela IMS (Beta)
           </div>
 
-          {/* Hamburger - Mobile Only */}
+          {/* Mobile Toggle (Right) */}
           <button
-            className="md:hidden p-2 text-gray-700 focus:outline-none"
+            className={`md:hidden absolute right-4 p-2 z-20 ${
+              scrolled ? "text-white" : "text-[#1e2d4d]"
+            } transition-colors`}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle Menu"
           >
-            ☰
+            {mobileMenuOpen ? "✕" : "☰"}
           </button>
 
-          {/* Desktop Nav */}
-          <div className="hidden md:flex space-x-6 items-center text-lg">
-            <Link href="/" className="hover:text-blue-600 transition">
-              Home
-            </Link>
-
+          {/* Desktop Menu (Right aligned) */}
+          <div
+            className={`hidden md:flex space-x-6 items-center text-lg absolute right-4 ${
+              scrolled ? "text-white" : "text-[#1e2d4d]"
+            }`}
+          >
+            <Link href="/" className="hover:text-[#ef7e1a] transition">Home</Link>
             {isLoggedIn ? (
               <>
-                <Link
-                  href="/dashboard"
-                  className="hover:text-blue-600 transition"
-                >
-                  Dashboard
-                </Link>
+                <Link href="/dashboard" className="hover:text-[#ef7e1a] transition">Dashboard</Link>
                 <button
                   onClick={handleLogout}
-                  className="text-red-500 hover:text-red-700 transition"
+                  className="text-red-400 hover:text-red-600 transition"
                 >
                   Logout
                 </button>
@@ -85,47 +94,31 @@ export default function Navbar() {
             ) : (
               <>
                 {pathname !== "/login" && (
-                  <Link
-                    href="/login"
-                    className="hover:text-blue-600 transition"
-                  >
-                    Login
-                  </Link>
+                  <Link href="/login" className="hover:text-[#ef7e1a] transition">Login</Link>
                 )}
-                <Link
-                  href="/register"
-                  className="hover:text-blue-600 transition"
-                >
-                  Register
-                </Link>
+                <Link href="/register" className="hover:text-[#ef7e1a] transition">Register</Link>
               </>
             )}
           </div>
         </div>
       </nav>
 
-      {/* Mobile Menu (below navbar) */}
+      {/* Mobile Dropdown Menu */}
       <div
-        className={`md:hidden bg-white border-t shadow-sm px-4 py-2 flex flex-col space-y-3 text-lg transition-all duration-300 transform ${
-          mobileMenuOpen ? "translate-y-0 opacity-100" : "-translate-y-4 opacity-0 pointer-events-none"
+        className={`md:hidden fixed left-0 w-full bg-white text-[#1e2d4d] shadow transition-all duration-300 px-4 py-4 space-y-4 text-base font-medium z-40 ${
+          mobileMenuOpen
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 -translate-y-5 pointer-events-none"
         }`}
-        style={{ marginTop: scrolled ? "50px" : "80px" }}
+        style={{ top: scrolled ? "50px" : "80px" }}
       >
-        <Link
-          href="/"
-          className="hover:text-blue-600 transition"
-          onClick={() => setMobileMenuOpen(false)}
-        >
+        <Link href="/" className="hover:text-[#ef7e1a] transition" onClick={() => setMobileMenuOpen(false)}>
           Home
         </Link>
 
         {isLoggedIn ? (
           <>
-            <Link
-              href="/dashboard"
-              className="hover:text-blue-600 transition"
-              onClick={() => setMobileMenuOpen(false)}
-            >
+            <Link href="/dashboard" className="hover:text-[#ef7e1a] transition" onClick={() => setMobileMenuOpen(false)}>
               Dashboard
             </Link>
             <button
@@ -141,19 +134,11 @@ export default function Navbar() {
         ) : (
           <>
             {pathname !== "/login" && (
-              <Link
-                href="/login"
-                className="hover:text-blue-600 transition"
-                onClick={() => setMobileMenuOpen(false)}
-              >
+              <Link href="/login" className="hover:text-[#ef7e1a] transition" onClick={() => setMobileMenuOpen(false)}>
                 Login
               </Link>
             )}
-            <Link
-              href="/register"
-              className="hover:text-blue-600 transition"
-              onClick={() => setMobileMenuOpen(false)}
-            >
+            <Link href="/register" className="hover:text-[#ef7e1a] transition" onClick={() => setMobileMenuOpen(false)}>
               Register
             </Link>
           </>
