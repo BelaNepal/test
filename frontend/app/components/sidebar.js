@@ -3,40 +3,46 @@
 import Link from "next/link";
 import { useLayout } from "@/context/LayoutContext";
 import { useState, useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
+
+// Sidebar config
+const menuItems = [
+  { href: "/dashboard", label: "Dashboard", icon: "📊" },
+  { href: "/dashboard/settings", label: "Settings", icon: "⚙️" },
+  { href: "/dashboard/profile", label: "Profile", icon: "👤" },
+  { href: "/dashboard/customer-form", label: "Customer Form", icon: "📝" },
+];
 
 export default function Sidebar() {
   const { navbarHeight } = useLayout();
   const footerHeight = 50;
+  const pathname = usePathname();
 
   const [collapsed, setCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-
   const sidebarRef = useRef(null);
 
-  // Handle screen size changes
+  // Resize handler
   useEffect(() => {
     const handleResize = () => {
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
       setCollapsed(mobile);
-      if (!mobile) setMobileOpen(false); // Close mobile sidebar when switching to desktop
+      if (!mobile) setMobileOpen(false);
     };
 
-    handleResize(); // Initial check
+    handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Close sidebar on outside click (mobile only)
+  // Click outside to close
   useEffect(() => {
     if (!isMobile || !mobileOpen) return;
 
     const handleClickOutside = (e) => {
-      if (
-        sidebarRef.current &&
-        !sidebarRef.current.contains(e.target)
-      ) {
+      if (sidebarRef.current && !sidebarRef.current.contains(e.target)) {
         setMobileOpen(false);
       }
     };
@@ -47,15 +53,17 @@ export default function Sidebar() {
 
   return (
     <>
-      {isMobile && (
+      {/* Mobile toggle button */}
+      {isMobile && !mobileOpen && (
         <button
           onClick={() => setMobileOpen(true)}
-          className="fixed top-2 left-2 z-50 p-2 bg-white rounded shadow-md"
+          className="fixed top-3 left-3 z-50 p-2 bg-white rounded shadow-md text-lg"
         >
           ☰
         </button>
       )}
 
+      {/* Mobile overlay */}
       {isMobile && mobileOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-40 z-30"
@@ -63,6 +71,7 @@ export default function Sidebar() {
         />
       )}
 
+      {/* Sidebar */}
       <aside
         ref={sidebarRef}
         className={`fixed bg-white border-r shadow-md z-40 overflow-auto transition-all duration-300 ease-in-out
@@ -74,12 +83,13 @@ export default function Sidebar() {
           left: 0,
         }}
       >
-        <div className="flex items-center justify-between px-4 py-4 border-b">
-          {!collapsed && <div className="font-bold text-xl">Your App</div>}
+        {/* Top section */}
+        <div className="flex items-center justify-between px-3 py-3 border-b">
+          {!collapsed && <div className="font-semibold text-base text-blue-700">Your App</div>}
           {!isMobile && (
             <button
               onClick={() => setCollapsed(!collapsed)}
-              className="text-gray-600 hover:text-gray-900 ml-auto"
+              className="text-gray-600 hover:text-blue-600 transition"
               title="Toggle Sidebar"
             >
               {collapsed ? "➤" : "⬅"}
@@ -87,38 +97,27 @@ export default function Sidebar() {
           )}
         </div>
 
-        <nav className="flex flex-col p-2 space-y-2">
-          <Link
-            href="/dashboard"
-            className="flex items-center space-x-2 text-gray-700 hover:bg-gray-100 px-3 py-2 rounded"
-          >
-            <span>📊</span>
-            {!collapsed && <span>Dashboard</span>}
-          </Link>
+        {/* Menu */}
+        <nav className="flex flex-col py-2 space-y-1">
+          {menuItems.map((item) => {
+            const active = pathname === item.href;
 
-          <Link
-            href="/dashboard/settings"
-            className="flex items-center space-x-2 text-gray-700 hover:bg-gray-100 px-3 py-2 rounded"
-          >
-            <span>⚙️</span>
-            {!collapsed && <span>Settings</span>}
-          </Link>
-
-          <Link
-            href="/dashboard/profile"
-            className="flex items-center space-x-2 text-gray-700 hover:bg-gray-100 px-3 py-2 rounded"
-          >
-            <span>👤</span>
-            {!collapsed && <span>Profile</span>}
-          </Link>
-
-          <Link
-            href="/dashboard/customer-form"
-            className="flex items-center space-x-2 text-gray-700 hover:bg-gray-100 px-3 py-2 rounded"
-          >
-            <span>📝</span>
-            {!collapsed && <span>Customer Form</span>}
-          </Link>
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                title={collapsed ? item.label : undefined}
+                className={`flex items-center text-sm font-medium transition-all px-3 py-2 rounded-md
+                  ${active ? "bg-blue-100 text-blue-700" : "text-gray-700 hover:bg-gray-100"}
+                  ${collapsed ? "justify-center" : "gap-3"}
+                `}
+                onClick={() => isMobile && setMobileOpen(false)}
+              >
+                <span className="text-lg">{item.icon}</span>
+                {!collapsed && <span className="truncate">{item.label}</span>}
+              </Link>
+            );
+          })}
         </nav>
       </aside>
     </>
