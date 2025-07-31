@@ -1,3 +1,4 @@
+// Sidebar.tsx
 "use client";
 
 import Link from "next/link";
@@ -71,7 +72,7 @@ export default function Sidebar() {
   // DESKTOP: sidebar
   return (
     <aside
-      className={`fixed bg-white border-r shadow-md z-40 overflow-y-auto transition-all duration-300 ease-in-out
+      className={`fixed bg-white border-r shadow-md z-30 overflow-y-auto transition-all duration-300 ease-in-out
         ${collapsed ? "w-16" : "w-64"}`}
       style={{
         top: `${navbarHeight}px`,

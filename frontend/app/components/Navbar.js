@@ -45,21 +45,59 @@ export default function Navbar() {
 
   return (
     <>
+      {/* Custom CSS for tablet-specific styles */}
+      <style>{`
+        /* Between 768px and 1024px, shrink menu text and make right menu items smaller & spaced nicely */
+        @media (min-width: 768px) and (max-width: 1024px) {
+          .tablet-menu {
+            font-size: 0.875rem; /* smaller text (~14px) */
+            gap: 1rem; /* less spacing between links */
+            right: 1rem !important; /* a bit padding from right */
+          }
+        }
+      `}</style>
+
       {/* Navbar */}
       <nav
         className={`fixed top-0 left-0 w-full z-50 shadow-md transition-all duration-300 ${
           scrolled ? "bg-[#1e2d4d]" : "bg-white"
         } ${scrolled ? "h-[50px]" : "h-[80px]"}`}
       >
-        <div className="relative flex items-center justify-center h-full px-4 sm:px-6 lg:px-10">
-          {/* Centered Logo */}
+        <div className="relative flex items-center h-full px-4 sm:px-6 lg:px-10">
+          {/* Left Logo */}
+          <div className="flex items-center absolute left-4 top-1/2 -translate-y-1/2 md:relative md:top-auto md:translate-y-0">
+            {/* Desktop Logo */}
+            <div className="hidden md:block">
+              <Link href="/">
+                <img
+                  src="/Logo-Bela.svg"
+                  alt="Bela IMS Logo"
+                  className={`w-auto transition-all duration-300 ${
+                    scrolled ? "h-12" : "h-16"
+                  }`}
+                />
+              </Link>
+            </div>
+            {/* Mobile Logo */}
+            <div className="md:hidden">
+              <Link href="/">
+                <img src="/Logo-Bela.svg" alt="Bela IMS Logo" className="h-8 w-auto" />
+              </Link>
+            </div>
+          </div>
+
+          {/* Centered Title */}
           <div
             className={`absolute left-1/2 transform -translate-x-1/2 font-bold whitespace-nowrap transition-colors duration-300 ${
               scrolled ? "text-white" : "text-[#1e2d4d]"
             }`}
-            style={{ fontSize: scrolled ? "1.2rem" : "1.6rem" }}
+            style={{
+              fontSize: scrolled ? "1.2rem" : "2rem", // bigger default size (2rem)
+            }}
           >
-            Project - Bela IMS (Beta)
+            <span className="text-base sm:text-xl md:text-2xl">
+              Project - Bela IMS (Beta)
+            </span>
           </div>
 
           {/* Mobile Toggle (Right) */}
@@ -75,9 +113,9 @@ export default function Navbar() {
 
           {/* Desktop Menu (Right aligned) */}
           <div
-            className={`hidden md:flex space-x-6 items-center text-lg absolute right-4 ${
+            className={`hidden md:flex space-x-6 items-center absolute right-4 pr-4 ${
               scrolled ? "text-white" : "text-[#1e2d4d]"
-            }`}
+            } tablet-menu`}
           >
             <Link href="/" className="hover:text-[#ef7e1a] transition">
               Home
@@ -167,6 +205,14 @@ export default function Navbar() {
           </>
         )}
       </div>
+
+      {/* Bottom Ribbon */}
+      <div
+        className={`fixed left-0 right-0 h-[4px] bg-[#ef7e1a] transition-all duration-300 ${
+          scrolled ? "top-[50px]" : "top-[80px]"
+        }`}
+        style={{ zIndex: 9999 }}
+      />
     </>
   );
 }
