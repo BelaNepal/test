@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { useLayout } from "@/context/LayoutContext";
 import LoadingOverlay from "@/components/LoadingOverlay";
+import nepalLocationData from "@/datasets/nepalData"; // Adjust path accordingly
 
 export default function ProjectInfoForm() {
   const [formData, setFormData] = useState({
@@ -25,16 +25,99 @@ export default function ProjectInfoForm() {
     vision: "",
   });
 
+  const [files, setFiles] = useState([]); // Array of File objects
   const [loading, setLoading] = useState(false);
   const [testLoading, setTestLoading] = useState(false);
-  const { collapsed } = useLayout();
+
+  // Dropdown dependent data states
+  const [districts, setDistricts] = useState([]);
+  const [municipalities, setMunicipalities] = useState([]);
+  const [wards, setWards] = useState([]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleProvinceChange = (e) => {
+    const selectedProvince = e.target.value;
+    setFormData((prev) => ({
+      ...prev,
+      province: selectedProvince,
+      district: "",
+      municipality: "",
+      ward: "",
+    }));
+
+    const provinceData = nepalLocationData.find((p) => p.name === selectedProvince);
+    setDistricts(provinceData?.districts || []);
+    setMunicipalities([]);
+    setWards([]);
+  };
+
+  const handleDistrictChange = (e) => {
+    const selectedDistrict = e.target.value;
+    setFormData((prev) => ({
+      ...prev,
+      district: selectedDistrict,
+      municipality: "",
+      ward: "",
+    }));
+
+    const districtData = districts.find((d) => d.name === selectedDistrict);
+    setMunicipalities(districtData?.municipalities || []);
+    setWards([]);
+  };
+
+  const handleMunicipalityChange = (e) => {
+    const selectedMunicipality = e.target.value;
+    setFormData((prev) => ({
+      ...prev,
+      municipality: selectedMunicipality,
+      ward: "",
+    }));
+
+    const municipalityData = municipalities.find((m) => m.name === selectedMunicipality);
+    if (municipalityData?.wards) {
+      setWards(Array.from({ length: municipalityData.wards }, (_, i) => i + 1));
+    } else {
+      setWards([]);
+    }
+  };
+
+  const handleWardChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      ward: e.target.value,
+    }));
+  };
+
+  // Multiple files selection handler
+  const handleFileChange = (e) => {
+    if (!e.target.files) return;
+
+    // Combine existing files and new files, avoid duplicates by name+size
+    const newFiles = Array.from(e.target.files);
+    setFiles((prevFiles) => {
+      const combined = [...prevFiles];
+      newFiles.forEach((nf) => {
+        if (!combined.some((f) => f.name === nf.name && f.size === nf.size)) {
+          combined.push(nf);
+        }
+      });
+      return combined;
     });
+
+    // Reset file input so same file can be selected again if removed
+    e.target.value = null;
+  };
+
+  // Remove file from selected list by index
+  const removeFile = (index) => {
+    setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e) => {
@@ -42,15 +125,51 @@ export default function ProjectInfoForm() {
     setLoading(true);
 
     try {
+      // Prepare FormData to send files + other form fields
+      const formPayload = new FormData();
+
+      // Append form fields
+      Object.entries(formData).forEach(([key, val]) => {
+        formPayload.append(key, val);
+      });
+
+      // Append files (multiple)
+      files.forEach((file, i) => {
+        formPayload.append("blueprintFiles", file);
+      });
+
+      // Use fetch with multipart/form-data
       const response = await fetch("http://localhost:5000/api/submit-form", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: formPayload,
       });
 
       const result = await response.json();
       if (response.ok) {
         alert("Your project info has been submitted successfully!");
+        setFormData({
+          fullName: "",
+          phone: "",
+          email: "",
+          date: "",
+          province: "",
+          district: "",
+          municipality: "",
+          ward: "",
+          street: "",
+          houseNo: "",
+          projectType: "",
+          projectTypeOther: "",
+          landArea: "",
+          squareFootage: "",
+          projectScope: "",
+          completionDate: "",
+          vision: "",
+        });
+        setFiles([]);
+        setDistricts([]);
+        setMunicipalities([]);
+        setWards([]);
       } else {
         alert("Error: " + result.message);
       }
@@ -68,34 +187,26 @@ export default function ProjectInfoForm() {
     { label: "Date", name: "date", type: "date" },
   ];
 
-  const addressFields = [
-    { label: "Province", name: "province" },
-    { label: "District", name: "district" },
-    { label: "Municipality / Rural Municipality", name: "municipality" },
-    { label: "Ward No.", name: "ward" },
-    { label: "Tole / Street Name", name: "street" },
-    { label: "House No. (or additional landmarks)", name: "houseNo" },
-  ];
-
   const projectTypes = ["Residential", "Commercial", "Other"];
-  const projectScopes = ["New Build", "Addition / Renovation", "Other"];
+  const projectScopes = ["New Build", "Addition / Extension", "Other"];
 
   const projectFields = [
     { label: "Total Land Area", name: "landArea" },
     { label: "Total Square Footage to be Constructed", name: "squareFootage" },
-    { label: "Desired Project Completion Date", name: "completionDate", type: "date" },
   ];
 
   return (
     <div
-      className={`transition-all duration-300 max-w-6xl mx-auto p-4 sm:p-6 shadow-xl border border-gray-200 relative bg-white rounded-md ${
-        collapsed ? "ml-16" : "ml-64"
-      } md:ml-0`}
+      className="relative bg-white shadow-xl border border-gray-200 rounded-md w-full min-h-screen px-4 py-8"
+      style={{
+        paddingTop: "4rem", // adjust for your navbar height
+        boxSizing: "border-box",
+      }}
     >
       <LoadingOverlay show={loading || testLoading} text="Submitting your form..." />
 
       {/* Banner */}
-      <div className="flex flex-col lg:flex-row overflow-hidden rounded-xl shadow-md mb-10">
+      <div className="flex flex-col lg:flex-row overflow-hidden rounded-xl shadow-md mb-10 w-full">
         <div className="flex-1 bg-white px-6 py-8 flex flex-col justify-center text-center lg:text-left">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#1e2d4d] tracking-tight leading-tight">
             PROJECT INFO
@@ -120,7 +231,7 @@ export default function ProjectInfoForm() {
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-10 text-sm">
+      <form onSubmit={handleSubmit} className="space-y-10 text-sm w-full">
         {/* Primary Info */}
         <div>
           <h2 className="text-md font-semibold bg-[#ef7e1a] text-white px-4 py-2 rounded">
@@ -128,16 +239,32 @@ export default function ProjectInfoForm() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
             {primaryFields.map(({ label, name, type = "text" }) => (
-              <div key={name}>
+              <div key={name} className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-                <input
-                  type={type}
-                  name={name}
-                  value={formData[name]}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#1e2d4d]"
-                />
+                {name === "phone" ? (
+                  <input
+                    type="tel"
+                    name="phone"
+                    autoComplete="tel"
+                    placeholder="98XXXXXXXX"
+                    value={formData.phone}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+                      setFormData((prev) => ({ ...prev, phone: val }));
+                    }}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#1e2d4d]"
+                  />
+                ) : (
+                  <input
+                    type={type}
+                    name={name}
+                    value={formData[name]}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#1e2d4d]"
+                  />
+                )}
               </div>
             ))}
           </div>
@@ -149,18 +276,112 @@ export default function ProjectInfoForm() {
             CONSTRUCTION SITE ADDRESS :
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-            {addressFields.map(({ label, name }) => (
-              <div key={name}>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-                <input
-                  type="text"
-                  name={name}
-                  value={formData[name]}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#1e2d4d]"
-                />
-              </div>
-            ))}
+            {/* Province */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Province</label>
+              <select
+                name="province"
+                value={formData.province}
+                onChange={handleProvinceChange}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#1e2d4d]"
+              >
+                <option value="">Select Province</option>
+                {nepalLocationData.map((p) => (
+                  <option key={p.name} value={p.name}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* District */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">District</label>
+              <select
+                name="district"
+                value={formData.district}
+                onChange={handleDistrictChange}
+                disabled={!districts.length}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#1e2d4d]"
+              >
+                <option value="">Select District</option>
+                {districts.map((d) => (
+                  <option key={d.name} value={d.name}>
+                    {d.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Municipality */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Municipality / Rural Municipality
+              </label>
+              <select
+                name="municipality"
+                value={formData.municipality}
+                onChange={handleMunicipalityChange}
+                disabled={!municipalities.length}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#1e2d4d]"
+              >
+                <option value="">Select Municipality</option>
+                {municipalities.map((m) => (
+                  <option key={m.name} value={m.name}>
+                    {m.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Ward */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Ward No.</label>
+              <select
+                name="ward"
+                value={formData.ward}
+                onChange={handleWardChange}
+                disabled={!wards.length}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#1e2d4d]"
+              >
+                <option value="">Select Ward</option>
+                {wards.map((w) => (
+                  <option key={w} value={w}>
+                    {w}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Street */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Tole / Street Name</label>
+              <input
+                type="text"
+                name="street"
+                value={formData.street}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#1e2d4d]"
+              />
+            </div>
+
+            {/* House No. */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                House No. (or additional landmarks)
+              </label>
+              <input
+                type="text"
+                name="houseNo"
+                value={formData.houseNo}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#1e2d4d]"
+              />
+            </div>
           </div>
         </div>
 
@@ -199,21 +420,6 @@ export default function ProjectInfoForm() {
                 )}
               </div>
             </div>
-
-            {/* Project Fields */}
-            {projectFields.map(({ label, name, type = "text" }) => (
-              <div key={name}>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-                <input
-                  type={type}
-                  name={name}
-                  value={formData[name]}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#1e2d4d]"
-                />
-              </div>
-            ))}
-
             {/* Project Scope */}
             <div>
               <label className="block mb-1 font-medium">Project Scope :</label>
@@ -235,7 +441,81 @@ export default function ProjectInfoForm() {
             </div>
           </div>
 
-          {/* Vision */}
+          {/* Total Land Area and Square Footage in 2 columns */}
+          <div className="grid grid-cols-2 gap-6 mt-4">
+            {projectFields.map(({ label, name, type = "text" }) => (
+              <div key={name}>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+                <input
+                  type={type}
+                  name={name}
+                  value={formData[name]}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#1e2d4d]"
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Desired Project Completion Date and File Upload in 2 columns */}
+          <div className="grid grid-cols-2 gap-6 mt-4 items-start">
+            {/* Completion Date */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Desired Project Completion Date
+              </label>
+              <input
+                type="date"
+                name="completionDate"
+                value={formData.completionDate}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#1e2d4d]"
+              />
+            </div>
+
+            {/* File Upload */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Attach Land/Building Blueprint(s) (PDF or Images)
+              </label>
+              <input
+                type="file"
+                multiple
+                accept=".pdf,image/*"
+                onChange={handleFileChange}
+                className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4
+                  file:rounded file:border-0
+                  file:text-sm file:font-semibold
+                  file:bg-blue-50 file:text-blue-700
+                  hover:file:bg-blue-100
+                  focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+
+              {/* Selected files list */}
+              {files.length > 0 && (
+                <ul className="mt-2 max-h-32 overflow-y-auto border border-gray-300 rounded p-2 space-y-1 bg-gray-50">
+                  {files.map((file, idx) => (
+                    <li
+                      key={file.name + file.size}
+                      className="flex justify-between items-center px-2 py-1 rounded hover:bg-gray-200 group"
+                    >
+                      <span className="truncate">{file.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeFile(idx)}
+                        className="opacity-0 group-hover:opacity-100 text-red-600 hover:text-red-800 transition-opacity"
+                        aria-label={`Remove file ${file.name}`}
+                      >
+                        &times;
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+
+          {/* Project Vision */}
           <div className="mt-6">
             <label className="block mb-2 font-medium">Project Vision and Goals :</label>
             <textarea
@@ -247,13 +527,6 @@ export default function ProjectInfoForm() {
               className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#1e2d4d]"
             />
           </div>
-
-          <p className="text-sm text-gray-700 mt-3">
-            <strong>Note:</strong> Please attach a PDF or image of the land and/or building blueprint(s) to{" "}
-            <a href="mailto:belanepal2025@gmail.com" className="text-blue-600 underline">
-              belanepal2025@gmail.com
-            </a>
-          </p>
         </div>
 
         {/* Buttons */}
@@ -266,18 +539,6 @@ export default function ProjectInfoForm() {
           </button>
         </div>
 
-        <div className="text-center mt-4">
-          <button
-            type="button"
-            className="bg-[#ef7e1a] hover:bg-[#d76b11] text-white py-2 px-6 rounded w-full sm:w-auto text-base"
-            onClick={() => {
-              setTestLoading(true);
-              setTimeout(() => setTestLoading(false), 3000);
-            }}
-          >
-            Test Loading Overlay
-          </button>
-        </div>
       </form>
     </div>
   );

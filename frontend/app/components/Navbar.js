@@ -52,7 +52,6 @@ export default function Navbar() {
         } ${scrolled ? "h-[50px]" : "h-[80px]"}`}
       >
         <div className="relative flex items-center justify-center h-full px-4 sm:px-6 lg:px-10">
-          
           {/* Centered Logo */}
           <div
             className={`absolute left-1/2 transform -translate-x-1/2 font-bold whitespace-nowrap transition-colors duration-300 ${
@@ -80,10 +79,14 @@ export default function Navbar() {
               scrolled ? "text-white" : "text-[#1e2d4d]"
             }`}
           >
-            <Link href="/" className="hover:text-[#ef7e1a] transition">Home</Link>
+            <Link href="/" className="hover:text-[#ef7e1a] transition">
+              Home
+            </Link>
             {isLoggedIn ? (
               <>
-                <Link href="/dashboard" className="hover:text-[#ef7e1a] transition">Dashboard</Link>
+                <Link href="/dashboard" className="hover:text-[#ef7e1a] transition">
+                  Dashboard
+                </Link>
                 <button
                   onClick={handleLogout}
                   className="text-red-400 hover:text-red-600 transition"
@@ -94,9 +97,13 @@ export default function Navbar() {
             ) : (
               <>
                 {pathname !== "/login" && (
-                  <Link href="/login" className="hover:text-[#ef7e1a] transition">Login</Link>
+                  <Link href="/login" className="hover:text-[#ef7e1a] transition">
+                    Login
+                  </Link>
                 )}
-                <Link href="/register" className="hover:text-[#ef7e1a] transition">Register</Link>
+                <Link href="/register" className="hover:text-[#ef7e1a] transition">
+                  Register
+                </Link>
               </>
             )}
           </div>
@@ -112,13 +119,21 @@ export default function Navbar() {
         }`}
         style={{ top: scrolled ? "50px" : "80px" }}
       >
-        <Link href="/" className="hover:text-[#ef7e1a] transition" onClick={() => setMobileMenuOpen(false)}>
+        <Link
+          href="/"
+          className="block w-full py-2 hover:text-[#ef7e1a] transition"
+          onClick={() => setMobileMenuOpen(false)}
+        >
           Home
         </Link>
 
         {isLoggedIn ? (
           <>
-            <Link href="/dashboard" className="hover:text-[#ef7e1a] transition" onClick={() => setMobileMenuOpen(false)}>
+            <Link
+              href="/dashboard"
+              className="block w-full py-2 hover:text-[#ef7e1a] transition"
+              onClick={() => setMobileMenuOpen(false)}
+            >
               Dashboard
             </Link>
             <button
@@ -126,7 +141,7 @@ export default function Navbar() {
                 handleLogout();
                 setMobileMenuOpen(false);
               }}
-              className="text-red-500 hover:text-red-700 transition text-left"
+              className="block w-full text-left py-2 text-red-500 hover:text-red-700 transition"
             >
               Logout
             </button>
@@ -134,11 +149,19 @@ export default function Navbar() {
         ) : (
           <>
             {pathname !== "/login" && (
-              <Link href="/login" className="hover:text-[#ef7e1a] transition" onClick={() => setMobileMenuOpen(false)}>
+              <Link
+                href="/login"
+                className="block w-full py-2 hover:text-[#ef7e1a] transition"
+                onClick={() => setMobileMenuOpen(false)}
+              >
                 Login
               </Link>
             )}
-            <Link href="/register" className="hover:text-[#ef7e1a] transition" onClick={() => setMobileMenuOpen(false)}>
+            <Link
+              href="/register"
+              className="block w-full py-2 hover:text-[#ef7e1a] transition"
+              onClick={() => setMobileMenuOpen(false)}
+            >
               Register
             </Link>
           </>
