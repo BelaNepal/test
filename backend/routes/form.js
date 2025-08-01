@@ -17,15 +17,20 @@ router.post("/submit-form", upload.array("blueprintFiles"), async (req, res) => 
 
     // Debug: log incoming formData to check keys and values
     console.log("Received formData:", formData);
+    console.log("Raw formData keys and values:");
+Object.entries(formData).forEach(([key, value]) => console.log(`${key}: ${value}`));
+
 
     // Parse rooms safely if it's a JSON string or object
-    let rooms = {};
-    try {
-      rooms = typeof formData.rooms === "string" ? JSON.parse(formData.rooms) : formData.rooms || {};
-    } catch (e) {
-      console.warn("Failed to parse rooms JSON:", e);
-      rooms = {};
-    }
+   // Reconstruct rooms object from keys like "rooms.bedroom"
+const rooms = {};
+Object.getOwnPropertyNames(formData).forEach((key) => {
+  if (key.startsWith("rooms.")) {
+    const roomKey = key.split(".")[1];
+    rooms[roomKey] = parseInt(formData[key] || "0", 10);
+  }
+});
+console.log("🧾 Final parsed rooms:", rooms);
 
     // Create email HTML content dynamically (update as needed)
     const emailHtml = `

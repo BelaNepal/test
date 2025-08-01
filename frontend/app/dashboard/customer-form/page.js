@@ -1,4 +1,4 @@
-    "use client";
+"use client";
 
     import React, { useState } from "react";
     import LoadingOverlay from "@/components/LoadingOverlay";
@@ -158,7 +158,13 @@
 
           // Append form fields
           Object.entries(formData).forEach(([key, val]) => {
-            formPayload.append(key, val);
+            if (key === "rooms" && typeof val === "object" && val !== null) {
+              Object.entries(val).forEach(([roomKey, roomVal]) => {
+                formPayload.append(`rooms.${roomKey}`, roomVal);
+              });
+            } else {
+              formPayload.append(key, val);
+            }
           });
 
           // Append files (multiple)
@@ -364,11 +370,11 @@
                     className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#1e2d4d]"
                   >
                     <option value="">Select District</option>
-                    {districts.map((d) => (
-                      <option key={d.name} value={d.name}>
-                        {d.name}
-                      </option>
-                    ))}
+                    {districts.map((district, idx) => (
+  <option key={`${district.name}-${idx}`} value={district.name}>
+    {district.name}
+  </option>
+))}
                   </select>
                 </div>
 
