@@ -15,24 +15,17 @@ router.post("/submit-form", upload.array("blueprintFiles"), async (req, res) => 
   try {
     const { body: formData, files = [] } = req;
 
-    // Debug: log incoming formData to check keys and values
-    console.log("Received formData:", formData);
-    console.log("Raw formData keys and values:");
-Object.entries(formData).forEach(([key, value]) => console.log(`${key}: ${value}`));
+    // Reconstruct rooms object from keys like "rooms.bedroom"
+    const rooms = {};
+    Object.getOwnPropertyNames(formData).forEach((key) => {
+      if (key.startsWith("rooms.")) {
+        const roomKey = key.split(".")[1];
+        rooms[roomKey] = parseInt(formData[key] || "0", 10);
+      }
+    });
+    console.log("🧾 Final parsed rooms:", rooms);
 
-
-    // Parse rooms safely if it's a JSON string or object
-   // Reconstruct rooms object from keys like "rooms.bedroom"
-const rooms = {};
-Object.getOwnPropertyNames(formData).forEach((key) => {
-  if (key.startsWith("rooms.")) {
-    const roomKey = key.split(".")[1];
-    rooms[roomKey] = parseInt(formData[key] || "0", 10);
-  }
-});
-console.log("🧾 Final parsed rooms:", rooms);
-
-    // Create email HTML content dynamically (update as needed)
+    // Build email HTML content dynamically
     const emailHtml = `
   <div style="font-family: Arial, sans-serif; max-width: 800px; margin: auto; border: 1px solid #ccc; padding: 24px;">
     <!-- Header -->
@@ -129,18 +122,30 @@ console.log("🧾 Final parsed rooms:", rooms);
   </div>
 `;
 
-    // Generate PDF from HTML
+    // Generate PDF from HTML with A4 size & margins
     const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
     const page = await browser.newPage();
+
     await page.setContent(emailHtml, { waitUntil: "networkidle0" });
-    const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
+
+    const pdfBuffer = await page.pdf({
+      format: "A4",
+      printBackground: true,
+      margin: {
+        top: "20mm",
+        right: "15mm",
+        bottom: "20mm",
+        left: "15mm",
+      },
+    });
+
     await browser.close();
 
     // Nodemailer transport setup
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT) || 587,
-      secure: false, // true if 465
+      secure: false,
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
