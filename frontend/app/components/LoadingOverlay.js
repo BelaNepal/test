@@ -8,13 +8,12 @@ export default function LoadingOverlay({ show = false, text = "Loading..." }) {
     <AnimatePresence>
       {show && (
         <motion.div
-          className="fixed inset-0 z-50 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center"
+          className="fixed top-[80px] bottom-[60px] left-0 right-0 z-40 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
           <div className="relative w-32 h-32 flex items-center justify-center">
-            {/* Animated house-shaped outline */}
             <svg
               viewBox="0 0 100 100"
               className="absolute w-full h-full"
@@ -33,7 +32,6 @@ export default function LoadingOverlay({ show = false, text = "Loading..." }) {
               />
             </svg>
 
-            {/* Logo inside the house */}
             <div className="absolute w-20 h-20 rounded overflow-hidden">
               <Image
                 src="/Logo-Bela.svg"

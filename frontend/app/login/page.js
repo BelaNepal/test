@@ -111,7 +111,7 @@ export default function LoginPage() {
             loading ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-700"
           }`}
         >
-          {loading ? "Logging in..." : "Login"}
+          {loading ? "Logging in... Please wait a " : "Login"}
         </button>
 
         {message && (

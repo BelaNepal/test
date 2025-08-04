@@ -8,9 +8,9 @@ import { useEffect } from "react";
 
 const menuItems = [
   { href: "/dashboard", label: "Dashboard", icon: "📊" },
+  { href: "/dashboard/customer-form", label: "Customer Form", icon: "📝" }, 
   { href: "/dashboard/settings", label: "Settings", icon: "⚙️" },
   { href: "/dashboard/profile", label: "Profile", icon: "👤" },
-  { href: "/dashboard/customer-form", label: "Customer Form", icon: "📝" },
 ];
 
 export default function Sidebar() {
@@ -83,7 +83,7 @@ export default function Sidebar() {
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-3 border-b">
         {!collapsed && (
-          <div className="font-semibold text-base text-[#1e2d4d]">Bela IMS</div>
+          <div className="font-semibold text-base text-[#1e2d4d]">Welcome</div>
         )}
         <button
           onClick={() => setCollapsed(!collapsed)}

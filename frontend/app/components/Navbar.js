@@ -47,21 +47,20 @@ export default function Navbar() {
     <>
       {/* Custom CSS for tablet-specific styles */}
       <style>{`
-        /* Between 768px and 1024px, shrink menu text and make right menu items smaller & spaced nicely */
         @media (min-width: 768px) and (max-width: 1024px) {
           .tablet-menu {
-            font-size: 0.875rem; /* smaller text (~14px) */
-            gap: 1rem; /* less spacing between links */
-            right: 1rem !important; /* a bit padding from right */
+            font-size: 0.875rem;
+            gap: 1rem;
+            right: 1rem !important;
           }
         }
       `}</style>
 
       {/* Navbar */}
       <nav
-        className={`fixed top-0 left-0 w-full z-50 shadow-md transition-all duration-300 ${
-          scrolled ? "bg-[#1e2d4d]" : "bg-white"
-        } ${scrolled ? "h-[50px]" : "h-[80px]"}`}
+        className={`fixed top-0 left-0 w-full z-50 shadow-md transition-all duration-300 bg-[#1e2d4d] ${
+          scrolled ? "h-[50px]" : "h-[80px]"
+        }`}
       >
         <div className="relative flex items-center h-full px-4 sm:px-6 lg:px-10">
           {/* Left Logo */}
@@ -81,7 +80,11 @@ export default function Navbar() {
             {/* Mobile Logo */}
             <div className="md:hidden">
               <Link href="/">
-                <img src="/Logo-Bela.svg" alt="Bela IMS Logo" className="h-8 w-auto" />
+                <img
+                  src="/Logo-Bela.svg"
+                  alt="Bela IMS Logo"
+                  className="h-8 w-auto transition-all duration-300"
+                />
               </Link>
             </div>
           </div>
@@ -89,10 +92,10 @@ export default function Navbar() {
           {/* Centered Title */}
           <div
             className={`absolute left-1/2 transform -translate-x-1/2 font-bold whitespace-nowrap transition-colors duration-300 ${
-              scrolled ? "text-white" : "text-[#1e2d4d]"
+              scrolled ? "text-white" : "text-white"
             }`}
             style={{
-              fontSize: scrolled ? "1.2rem" : "2rem", // bigger default size (2rem)
+              fontSize: scrolled ? "1.2rem" : "2rem",
             }}
           >
             <span className="text-base sm:text-xl md:text-2xl">
@@ -100,29 +103,39 @@ export default function Navbar() {
             </span>
           </div>
 
-          {/* Mobile Toggle (Right) */}
+          {/* Mobile Toggle */}
           <button
-            className={`md:hidden absolute right-4 p-2 z-20 ${
-              scrolled ? "text-white" : "text-[#1e2d4d]"
-            } transition-colors`}
+            className={`md:hidden absolute right-4 p-2 z-20 transition-colors duration-300 ${
+              scrolled || mobileMenuOpen ? "text-[#ef7e1a]" : "text-white"
+            }`}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle Menu"
           >
             {mobileMenuOpen ? "✕" : "☰"}
           </button>
 
-          {/* Desktop Menu (Right aligned) */}
+          {/* Desktop Menu */}
           <div
-            className={`hidden md:flex space-x-6 items-center absolute right-4 pr-4 ${
-              scrolled ? "text-white" : "text-[#1e2d4d]"
-            } tablet-menu`}
+            className={`hidden md:flex space-x-6 items-center absolute right-4 pr-4 transition-colors duration-300 text-white tablet-menu`}
           >
-            <Link href="/" className="hover:text-[#ef7e1a] transition">
+            <Link
+              href="/"
+              className={`hover:text-[#ef7e1a] transition hover:underline underline-offset-4 ${
+                pathname === "/" ? "text-[#ef7e1a] font-semibold" : ""
+              }`}
+            >
               Home
             </Link>
             {isLoggedIn ? (
               <>
-                <Link href="/dashboard" className="hover:text-[#ef7e1a] transition">
+                <Link
+                  href="/dashboard"
+                  className={`hover:text-[#ef7e1a] transition hover:underline underline-offset-4 ${
+                    pathname === "/dashboard"
+                      ? "text-[#ef7e1a] font-semibold"
+                      : ""
+                  }`}
+                >
                   Dashboard
                 </Link>
                 <button
@@ -135,11 +148,25 @@ export default function Navbar() {
             ) : (
               <>
                 {pathname !== "/login" && (
-                  <Link href="/login" className="hover:text-[#ef7e1a] transition">
+                  <Link
+                    href="/login"
+                    className={`hover:text-[#ef7e1a] transition hover:underline underline-offset-4 ${
+                      pathname === "/login"
+                        ? "text-[#ef7e1a] font-semibold"
+                        : ""
+                    }`}
+                  >
                     Login
                   </Link>
                 )}
-                <Link href="/register" className="hover:text-[#ef7e1a] transition">
+                <Link
+                  href="/register"
+                  className={`hover:text-[#ef7e1a] transition hover:underline underline-offset-4 ${
+                    pathname === "/register"
+                      ? "text-[#ef7e1a] font-semibold"
+                      : ""
+                  }`}
+                >
                   Register
                 </Link>
               </>
@@ -148,7 +175,7 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile Dropdown Menu */}
+      {/* Mobile Dropdown */}
       <div
         className={`md:hidden fixed left-0 w-full bg-white text-[#1e2d4d] shadow transition-all duration-300 px-4 py-4 space-y-4 text-base font-medium z-40 ${
           mobileMenuOpen
@@ -159,17 +186,20 @@ export default function Navbar() {
       >
         <Link
           href="/"
-          className="block w-full py-2 hover:text-[#ef7e1a] transition"
+          className={`block w-full py-2 hover:text-[#ef7e1a] transition ${
+            pathname === "/" ? "text-[#ef7e1a] font-semibold" : ""
+          }`}
           onClick={() => setMobileMenuOpen(false)}
         >
           Home
         </Link>
-
         {isLoggedIn ? (
           <>
             <Link
               href="/dashboard"
-              className="block w-full py-2 hover:text-[#ef7e1a] transition"
+              className={`block w-full py-2 hover:text-[#ef7e1a] transition ${
+                pathname === "/dashboard" ? "text-[#ef7e1a] font-semibold" : ""
+              }`}
               onClick={() => setMobileMenuOpen(false)}
             >
               Dashboard
@@ -189,7 +219,9 @@ export default function Navbar() {
             {pathname !== "/login" && (
               <Link
                 href="/login"
-                className="block w-full py-2 hover:text-[#ef7e1a] transition"
+                className={`block w-full py-2 hover:text-[#ef7e1a] transition ${
+                  pathname === "/login" ? "text-[#ef7e1a] font-semibold" : ""
+                }`}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Login
@@ -197,7 +229,9 @@ export default function Navbar() {
             )}
             <Link
               href="/register"
-              className="block w-full py-2 hover:text-[#ef7e1a] transition"
+              className={`block w-full py-2 hover:text-[#ef7e1a] transition ${
+                pathname === "/register" ? "text-[#ef7e1a] font-semibold" : ""
+              }`}
               onClick={() => setMobileMenuOpen(false)}
             >
               Register
