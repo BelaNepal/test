@@ -5,7 +5,9 @@ const path = require("path");
 const cors = require("cors");
 const authRoutes = require("./routes/auth");
 const protectedRoutes = require("./routes/protected"); // <== new
+
 const formRoute = require("./routes/form");
+const documentRoutes = require("./routes/documents");
 
 const app = express();
 
@@ -18,6 +20,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api", protectedRoutes); // <== protect routes here
 app.use("/api", formRoute);
+app.use("/api/documents", documentRoutes);
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: "Something went wrong" });

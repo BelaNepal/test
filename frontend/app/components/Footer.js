@@ -1,7 +1,10 @@
 export default function Footer() {
   return (
-    <footer className="fixed bottom-0 left-0 w-full z-50 backdrop-blur-md bg-[#fdf2e9]/90 text-[#1e2d4d] shadow-[0_-1px_8px_rgba(0,0,0,0.08)]">
-      <div className="flex flex-col sm:flex-row justify-between items-center px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium">
+    <footer
+      className="fixed bottom-0 left-0 w-full z-50 backdrop-blur-md bg-[#fdf2e9]/90 text-[#1e2d4d] shadow-[0_-1px_8px_rgba(0,0,0,0.08)]"
+      style={{ height: "50px" }} // fixed height here
+    >
+      <div className="flex flex-col sm:flex-row justify-between items-center px-4 h-full text-xs sm:text-sm font-medium">
         {/* Left Side */}
         <div className="flex items-center gap-2">
           <span className="text-xs sm:text-sm font-semibold tracking-wide">

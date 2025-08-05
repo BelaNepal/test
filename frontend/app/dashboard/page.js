@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "../../utils/api";
+import { useUser } from "@/context/UserContext"; // Add this import
 
 export default function Dashboard() {
   const [username, setUsername] = useState("");
   const [message, setMessage] = useState("");
   const router = useRouter();
+  const { setUsername: setGlobalUsername } = useUser(); // Get context setter
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -25,12 +27,14 @@ export default function Dashboard() {
       .then((res) => {
         setMessage(res.data.message);
         setUsername(res.data.user);
+        setGlobalUsername(res.data.user); // <-- Update context
+        localStorage.setItem("username", res.data.user); // <-- Update localStorage
       })
       .catch((err) => {
         console.error("Error fetching protected data", err);
         router.push("/login");
       });
-  }, [router]);
+  }, [router, setGlobalUsername]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
