@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 
 export default function Navbar() {
   const router = useRouter();
@@ -45,7 +46,6 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Custom CSS for tablet-specific styles */}
       <style>{`
         @media (min-width: 768px) and (max-width: 1024px) {
           .tablet-menu {
@@ -56,7 +56,6 @@ export default function Navbar() {
         }
       `}</style>
 
-      {/* Navbar */}
       <nav
         className={`fixed top-0 left-0 w-full z-50 shadow-md transition-all duration-300 bg-[#1e2d4d] ${
           scrolled ? "h-[50px]" : "h-[80px]"
@@ -68,9 +67,11 @@ export default function Navbar() {
             {/* Desktop Logo */}
             <div className="hidden md:block">
               <Link href="/">
-                <img
+                <Image
                   src="/Logo-Bela.svg"
                   alt="Bela IMS Logo"
+                  width={160}
+                  height={64}
                   className={`w-auto transition-all duration-300 ${
                     scrolled ? "h-12" : "h-16"
                   }`}
@@ -80,9 +81,11 @@ export default function Navbar() {
             {/* Mobile Logo */}
             <div className="md:hidden">
               <Link href="/">
-                <img
+                <Image
                   src="/Logo-Bela.svg"
                   alt="Bela IMS Logo"
+                  width={100}
+                  height={32}
                   className="h-8 w-auto transition-all duration-300"
                 />
               </Link>

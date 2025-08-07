@@ -4,6 +4,8 @@
     import LoadingOverlay from "@/components/LoadingOverlay";
     import nepalLocationData from "@/datasets/nepalData"; // Adjust path accordingly
 
+    import Image from "next/image";
+
     export default function ProjectInfoForm() {
       const [formData, setFormData] = useState({
         fullName: "",
@@ -281,7 +283,13 @@
             <div className="bg-[#1e2d4d] text-white flex items-center justify-center px-6 py-8 w-full lg:w-80">
               <div className="flex flex-col items-center lg:items-end text-center lg:text-right w-full">
                 <div className="w-24 sm:w-28 lg:w-32 mb-3">
-                  <img src="/Logo-Bela.svg" alt="Bela Nepal Logo" className="w-full h-auto object-contain" />
+                  <Image
+                    src="/Logo-Bela.svg"
+                    alt="Bela Nepal Logo"
+                    width={128}    // adjust width to match w-32 (128px)
+                    height={128}   // approximate height, adjust as needed
+                    className="object-contain"
+                  />
                 </div>
                 <div className="text-sm sm:text-base leading-snug space-y-1 break-words w-full">
                   <p className="font-semibold tracking-wide">Bela Nepal Pvt. Ltd.</p>
