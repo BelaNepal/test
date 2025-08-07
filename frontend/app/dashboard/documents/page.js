@@ -357,7 +357,7 @@ export default function DocumentsPage() {
       {activeTab === "download" && (
         <div className="max-w-4xl text-center text-gray-600">
           <p className="mb-4 text-lg font-semibold text-[#1e2d4d]">Download Documents</p>
-          <p>Use the "View" links under the View or Search tabs to open or download documents.</p>
+          <p>Use the View links under the View or Search tabs to open or download documents.</p>
         </div>
       )}
     </main>
