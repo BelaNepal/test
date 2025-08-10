@@ -1,18 +1,22 @@
 import Link from "next/link";
 import Image from "next/image";
+import NepaliCalendar from "./components/NepaliCalendar";
 
 export default function Home() {
   return (
-    <div className="relative min-h-screen bg-gray-50 p-8 overflow-hidden flex items-center justify-start">
-      {/* Watermark Logo */}
+    <div className="relative min-h-screen bg-gray-50 p-8 flex flex-col md:flex-row items-center justify-between gap-10 md:gap-16">
+      {/* Watermark Logo - bigger, centered */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <Image
-          src="/Logo-Bela.svg" // Replace with your logo path
-          alt="Watermark Logo"
-          width={500}
-          height={500}
-          className="opacity-5 object-contain"
-        />
+        <div className="relative w-[700px] h-[700px]">
+          <Image
+            src="/Logo-Bela.svg"
+            alt="Watermark Logo"
+            fill
+            className="opacity-5 object-contain"
+            style={{ userSelect: "none" }}
+            priority
+          />
+        </div>
       </div>
 
       {/* Left-aligned Welcome Section */}
@@ -27,9 +31,13 @@ export default function Home() {
           href="/login"
           className="relative inline-block bg-blue-600 text-white px-6 py-2 rounded-xl shadow-md transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg hover:bg-[#ef7e1f] focus:outline-none focus:ring-2 focus:ring-blue-400"
         >
-  Go to Login
-</Link>
+          Go to Login
+        </Link>
+      </div>
 
+      {/* Right-aligned Nepali Calendar with more width */}
+      <div className="relative z-10 w-full md:max-w-xl md:flex-none">
+        <NepaliCalendar />
       </div>
     </div>
   );
