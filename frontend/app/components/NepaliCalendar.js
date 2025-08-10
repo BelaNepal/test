@@ -182,10 +182,11 @@ export default function NepaliCalendar() {
   return (
     <section
       aria-label="Nepali Calendar"
-      className="max-w-lg mx-auto bg-white rounded-2xl shadow-lg p-8 font-sans select-none sm:max-w-xl md:max-w-3xl"
+      className="max-w-lg mx-auto p-8 font-sans select-none sm:max-w-xl md:max-w-3xl"
+      style={{ backgroundColor: "transparent" }}
     >
       {/* Title Bar */}
-      <header className="flex items-center justify-between mb-8 bg-gradient-to-r from-[#ef7e1a] via-[#e18a1b] to-[#ef7e1a] rounded-xl p-4 shadow-lg">
+      <header className="flex items-center justify-between mb-8 bg-gradient-to-r from-[#ef7e1a] via-[#e18a1b] to-[#ef7e1a] rounded-xl p-4 shadow-lg text-white">
         <div className="flex items-center space-x-2">
           <button
             onClick={() => {
@@ -200,7 +201,7 @@ export default function NepaliCalendar() {
               setSelectedDate(null);
             }}
             aria-label="Previous Month"
-            className="text-white text-3xl font-bold rounded-full hover:bg-[#1e2d4d] w-10 h-10 flex items-center justify-center transition"
+            className="text-3xl font-bold rounded-full hover:bg-[#1e2d4d] w-10 h-10 flex items-center justify-center transition"
           >
             ‹
           </button>
@@ -236,20 +237,17 @@ export default function NepaliCalendar() {
               setSelectedDate(null);
             }}
             aria-label="Next Month"
-            className="text-white text-3xl font-bold rounded-full hover:bg-[#1e2d4d] w-10 h-10 flex items-center justify-center transition"
+            className="text-3xl font-bold rounded-full hover:bg-[#1e2d4d] w-10 h-10 flex items-center justify-center transition"
           >
             ›
           </button>
         </div>
 
         <div className="flex flex-col items-center flex-1 text-center select-none">
-          <h2
-            aria-live="polite"
-            className="text-3xl font-extrabold text-white"
-          >
+          <h2 aria-live="polite" className="text-3xl font-extrabold">
             {nepaliMonths[bsMonth - 1]} {toNepaliNumber(bsYear)}
           </h2>
-          <p className="text-xs text-[#d6d6d6] mt-0.5 font-semibold">
+          <p className="text-xs mt-0.5 font-semibold text-[#ef7e1a]">
             {startEngMonth}
             {startEngMonth !== endEngMonth ? " / " + endEngMonth : ""}
           </p>
@@ -259,29 +257,14 @@ export default function NepaliCalendar() {
       </header>
 
       {/* Weekday titles */}
-      <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-3">
+      <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-3 text-[#1e2d4d]">
         {weekDaysFull.map((day, i) => {
-          // Get English weekday name for the first week day row starting date
-          // We'll get English weekday by converting Nepali date of that weekday
-
-          // Approximate English weekday names
-          const engWeekDays = [
-            "Sun",
-            "Mon",
-            "Tue",
-            "Wed",
-            "Thu",
-            "Fri",
-            "Sat",
-          ];
-
+          const engWeekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
           return (
             <div
               key={day}
               className={`flex flex-col items-center justify-center font-semibold w-full aspect-square text-xs sm:text-sm md:text-base rounded-lg select-none ${
-                i === 6
-                  ? "text-[#ef7e1a] bg-[#fef5e8]"
-                  : "text-[#1e2d4d] bg-[#f0f4fa]"
+                i === 6 ? "text-[#ef7e1a]" : ""
               }`}
             >
               <span className="block sm:hidden">{weekDaysShort[i]}</span>
@@ -295,11 +278,11 @@ export default function NepaliCalendar() {
       </div>
 
       {/* Dates grid */}
-      <div className="grid grid-cols-7 gap-1 sm:gap-2">
+      <div className="grid grid-cols-7 gap-1 sm:gap-2 text-[#1e2d4d]">
         {Array.from({ length: firstWeekDay }).map((_, i) => (
           <div
             key={`blank-${i}`}
-            className="aspect-square flex items-center justify-center rounded-lg border border-transparent"
+            className="aspect-square flex items-center justify-center rounded-lg"
           />
         ))}
 
@@ -324,16 +307,15 @@ export default function NepaliCalendar() {
             <div
               key={dateNum}
               onClick={() => handleDateSelect(dateNum)}
-              className={`aspect-square flex flex-col items-center justify-center text-sm sm:text-base font-semibold rounded-lg
-                transition-transform duration-200 ease-in-out transform cursor-pointer shadow-sm
+              className={`aspect-square flex flex-col items-center justify-center text-sm sm:text-base font-semibold rounded-lg cursor-pointer transition-transform duration-200 ease-in-out transform
                 ${
                   isToday
                     ? "bg-[#1e2d4d] text-white shadow-lg ring-2 ring-[#1e2d4d] ring-offset-2"
                     : isSelected
                     ? "bg-[#3b82f6] text-white shadow-md ring-1 ring-[#3b82f6] ring-offset-1"
                     : isSaturday
-                    ? "text-[#ef7e1a] bg-gradient-to-br from-[#fff4eb] to-[#ffe7d2]"
-                    : "text-[#1e2d4d] bg-gradient-to-br from-white to-[#f9fafb]"
+                    ? "text-[#ef7e1a]"
+                    : ""
                 }
                 hover:scale-105 hover:shadow-md
               `}
