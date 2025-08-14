@@ -170,11 +170,9 @@ export default function NepaliCalendar() {
     "December",
   ];
 
-  // Get English month names (possibly two months)
   const startEngMonth = engMonths[gregMonthStart.getUTCMonth()];
   const endEngMonth = engMonths[gregMonthEnd.getUTCMonth()];
 
-  // Handler for selecting a date
   function handleDateSelect(dayNum) {
     setSelectedDate({ year: bsYear, month: bsMonth, day: dayNum });
   }
@@ -256,20 +254,19 @@ export default function NepaliCalendar() {
         <div style={{ width: 80 }} />
       </header>
 
-      {/* Weekday titles */}
+      {/* Weekday titles - now styled as boxes */}
       <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-3 text-[#1e2d4d]">
         {weekDaysFull.map((day, i) => {
           const engWeekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
           return (
             <div
               key={day}
-              className={`flex flex-col items-center justify-center font-semibold w-full aspect-square text-xs sm:text-sm md:text-base rounded-lg select-none ${
-                i === 6 ? "text-[#ef7e1a]" : ""
-              }`}
+              className={`flex flex-col items-center justify-center font-semibold w-full aspect-square text-xs sm:text-sm md:text-base rounded-lg shadow-sm select-none 
+                ${i === 6 ? "bg-[#fff5eb] text-[#ef7e1a]" : "bg-gray-100 text-gray-700"}`}
             >
               <span className="block sm:hidden">{weekDaysShort[i]}</span>
               <span className="hidden sm:block">{day}</span>
-              <span className="text-[10px] font-semibold text-gray-400 mt-1">
+              <span className="text-[10px] font-semibold text-gray-500 mt-1">
                 {engWeekDays[i]}
               </span>
             </div>
@@ -299,7 +296,6 @@ export default function NepaliCalendar() {
             selectedDate.year === bsYear;
           const isSaturday = (firstWeekDay + i) % 7 === 6;
 
-          // Calculate corresponding Gregorian date for this Nepali date
           const gregDate = nepaliToGregorianApproximate(bsYear, bsMonth, dateNum);
           const engDateNum = gregDate.getUTCDate();
 
