@@ -144,17 +144,13 @@ export default function NepaliCalendar() {
   }
 
   const totalDays = nepaliMonthDays[bsMonth] || 30;
-
   const firstDayDate = nepaliToGregorianApproximate(bsYear, bsMonth, 1);
   const firstWeekDay = firstDayDate.getUTCDay();
-
   const isTodayMonthYear = bsYear === todayNep.year && bsMonth === todayNep.month;
 
-  // Calculate English months for current Nepali month
   const gregMonthStart = nepaliToGregorianApproximate(bsYear, bsMonth, 1);
   const gregMonthEnd = nepaliToGregorianApproximate(bsYear, bsMonth, totalDays);
 
-  // English month names array for display
   const engMonths = [
     "January",
     "February",
@@ -204,7 +200,7 @@ export default function NepaliCalendar() {
             ‹
           </button>
 
-          {!isTodayMonthYear && (
+            {!isTodayMonthYear && (
             <button
               onClick={() => {
                 setBsYear(todayNep.year);
@@ -216,11 +212,13 @@ export default function NepaliCalendar() {
                 });
               }}
               aria-label="Go to Today"
-              className="bg-white text-[#ef7e1a] font-semibold rounded-lg px-3 py-1 hover:bg-[#ef7e1a] hover:text-white transition"
+              className="bg-white text-[#ef7e1a] font-semibold rounded-lg px-3 py-1 
+                        hover:bg-[#001f5b] hover:text-white transition"
             >
               आज (Today)
             </button>
           )}
+
 
           <button
             onClick={() => {
@@ -254,8 +252,8 @@ export default function NepaliCalendar() {
         <div style={{ width: 80 }} />
       </header>
 
-      {/* Weekday titles - now styled as boxes */}
-      <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-3 text-[#1e2d4d]">
+      {/* Weekday titles with larger gap on large screens */}
+      <div className="grid grid-cols-7 gap-1 sm:gap-2 lg:gap-4 mb-3 text-[#1e2d4d]">
         {weekDaysFull.map((day, i) => {
           const engWeekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
           return (

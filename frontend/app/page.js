@@ -35,9 +35,9 @@ export default function Home() {
         </Link>
       </div>
 
-      {/* Right-aligned Nepali Calendar - smaller and lower */}
-      <div className="relative z-10 w-full md:max-w-md md:flex-none mt-8">
-        <div className="scale-90 origin-top">
+      {/* Right-aligned Nepali Calendar - slightly bigger width */}
+      <div className="relative z-10 w-full md:max-w-lg md:flex-none mt-8">
+        <div className="scale-95 origin-top">
           <NepaliCalendar />
         </div>
       </div>

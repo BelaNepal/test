@@ -16,7 +16,6 @@ export default function DocumentsPage() {
   const [fileTypeFilter, setFileTypeFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
 
-  // Fetch all documents on mount and after changes
   useEffect(() => {
     fetchDocuments();
   }, []);
@@ -34,11 +33,9 @@ export default function DocumentsPage() {
     }
   }
 
-  // Filter documents by search, file type, and date
   useEffect(() => {
     let filtered = documents;
 
-    // Search title or description
     if (searchTerm.trim()) {
       const lowerSearch = searchTerm.toLowerCase();
       filtered = filtered.filter(
@@ -48,7 +45,6 @@ export default function DocumentsPage() {
       );
     }
 
-    // File type filter
     if (fileTypeFilter !== "all") {
       filtered = filtered.filter((doc) => {
         const ext = doc.filename?.split(".").pop().toLowerCase();
@@ -56,7 +52,6 @@ export default function DocumentsPage() {
       });
     }
 
-    // Date filter
     filtered = filtered.filter((doc) => {
       if (dateFilter === "all") return true;
       if (!doc.uploaded_at) return false;
@@ -84,12 +79,10 @@ export default function DocumentsPage() {
     setFilteredDocs(filtered);
   }, [searchTerm, fileTypeFilter, dateFilter, documents]);
 
-  // Handle file input
   function handleFileChange(e) {
     setFile(e.target.files[0]);
   }
 
-  // Upload document
   async function handleUpload(e) {
     e.preventDefault();
     if (!file || !title.trim()) {
@@ -115,10 +108,7 @@ export default function DocumentsPage() {
         throw new Error(err.error || "Upload failed");
       }
 
-      // Refresh document list
       await fetchDocuments();
-
-      // Reset form
       setFile(null);
       setTitle("");
       setDescription("");
@@ -131,17 +121,12 @@ export default function DocumentsPage() {
     setLoading(false);
   }
 
-  // Delete document
   async function handleDelete(id) {
     if (!confirm("Are you sure you want to delete this document?")) return;
 
     try {
-      const res = await fetch(`${API_BASE}/${id}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete document");
-
-      // Refresh document list
       await fetchDocuments();
     } catch (error) {
       console.error(error);
@@ -155,7 +140,7 @@ export default function DocumentsPage() {
 
       {/* Tabs */}
       <nav className="bg-gray-100 mb-6 rounded-md px-4 py-3 border border-gray-300 flex flex-wrap gap-3 sm:gap-6">
-        {["upload", "view", "search", "download"].map((tab) => (
+        {["upload", "view", "search"].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -233,7 +218,7 @@ export default function DocumentsPage() {
             <p className="text-center text-gray-500">No documents uploaded yet.</p>
           ) : (
             <ul className="max-w-5xl space-y-4">
-              {documents.map(({ id, title, description, url }) => (
+              {documents.map(({ id, title, description, url, filename }) => (
                 <li
                   key={id}
                   className="border border-gray-300 rounded-md p-4 flex justify-between items-center shadow-sm hover:shadow-md transition"
@@ -251,6 +236,13 @@ export default function DocumentsPage() {
                       className="text-[#ef7e1e] underline font-semibold hover:text-[#d66c17]"
                     >
                       View
+                    </a>
+                    <a
+                      href={url}
+                      download={filename}
+                      className="text-green-600 underline font-semibold hover:text-green-800"
+                    >
+                      Download
                     </a>
                     <button
                       onClick={() => handleDelete(id)}
@@ -271,7 +263,7 @@ export default function DocumentsPage() {
         <div className="max-w-5xl space-y-6">
           <input
             type="search"
-            placeholder="Search documents by title or description..."
+            placeholder="Search documents by title, description or images..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full border border-gray-300 rounded-md px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#ef7e1e]"
@@ -295,6 +287,10 @@ export default function DocumentsPage() {
                 <option value="xls">XLS</option>
                 <option value="xlsx">XLSX</option>
                 <option value="txt">TXT</option>
+                <option value="jpg">JPG</option>
+                <option value="jpeg">JPEG</option>
+                <option value="png">PNG</option>
+                <option value="gif">GIF</option>
               </select>
             </div>
 
@@ -320,7 +316,7 @@ export default function DocumentsPage() {
             <p className="mt-4 text-center text-gray-500">No matching documents found.</p>
           ) : (
             <ul className="mt-6 space-y-4">
-              {filteredDocs.map(({ id, title, description, url }) => (
+              {filteredDocs.map(({ id, title, description, url, filename }) => (
                 <li
                   key={id}
                   className="border border-gray-300 rounded-md p-4 flex justify-between items-center shadow-sm hover:shadow-md transition"
@@ -339,6 +335,13 @@ export default function DocumentsPage() {
                     >
                       View
                     </a>
+                    <a
+                      href={url}
+                      download={filename}
+                      className="text-green-600 underline font-semibold hover:text-green-800"
+                    >
+                      Download
+                    </a>
                     <button
                       onClick={() => handleDelete(id)}
                       className="text-red-600 hover:text-red-800 font-semibold"
@@ -350,14 +353,6 @@ export default function DocumentsPage() {
               ))}
             </ul>
           )}
-        </div>
-      )}
-
-      {/* Download Tab */}
-      {activeTab === "download" && (
-        <div className="max-w-4xl text-center text-gray-600">
-          <p className="mb-4 text-lg font-semibold text-[#1e2d4d]">Download Documents</p>
-          <p>Use the View links under the View or Search tabs to open or download documents.</p>
         </div>
       )}
     </main>
