@@ -22,10 +22,24 @@ const menuItems = [
   { href: "/dashboard/profile", label: "Profile", icon: <User size={20} /> },
 ];
 
-// Helper function to capitalize first letter
+// Helper: Capitalize first letter
 function capitalizeFirstLetter(string) {
   if (!string) return "";
   return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+// Helper: Capitalize entire string
+function capitalizeAll(string) {
+  if (!string) return "";
+  return string.toUpperCase();
+}
+
+// Helper: Dynamic greeting based on time
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 18) return "Good afternoon";
+  return "Good evening";
 }
 
 export default function Sidebar() {
@@ -52,14 +66,13 @@ export default function Sidebar() {
     if (!isMobile || !mobileOpen) return;
 
     function handleClickOutside(e) {
-      // You might want to refine this with ref check, simplified here
       setMobileOpen(false);
     }
     document.addEventListener("mousedown", handleClickOutside);
-
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isMobile, mobileOpen, setMobileOpen]);
 
+  // Mobile sidebar
   if (isMobile) {
     return (
       <nav
@@ -107,7 +120,7 @@ export default function Sidebar() {
       <div className="flex items-center justify-between px-3 py-3 border-b">
         {!collapsed && (
           <div className="font-semibold text-base text-[#1e2d4d] truncate max-w-[70%]">
-            Welcome <strong>{capitalizeFirstLetter(username) || "Guest"}</strong>
+            {getGreeting()} <strong>{capitalizeAll(username) || "GUEST"}</strong>
           </div>
         )}
         <button
