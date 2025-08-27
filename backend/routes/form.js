@@ -3,7 +3,6 @@ const express = require("express");
 const multer = require("multer");
 const nodemailer = require("nodemailer");
 const puppeteer = require("puppeteer");
-const axios = require("axios");
 
 const router = express.Router();
 
@@ -24,117 +23,52 @@ router.post("/submit-form", upload.array("blueprintFiles"), async (req, res) => 
       }
     });
 
-    // Fetch logo as base64
-    let logoBase64 = "";
-    try {
-      const logoResp = await axios.get("https://belanepal.com.np/wp-content/uploads/Logo-2.png", {
-        responseType: "arraybuffer",
-      });
-      logoBase64 = Buffer.from(logoResp.data, "binary").toString("base64");
-    } catch (err) {
-      console.warn("⚠️ Failed to fetch logo for PDF:", err.message);
-    }
-
-    // HTML content for email and PDF
+    // HTML content for email & PDF
     const emailHtml = `
-    <html>
-      <head>
-        <meta charset="UTF-8">
-        <title>Project Submission</title>
-      </head>
-      <body style="font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px; position: relative; min-height: 1200px;">
-        <!-- Watermark -->
-        ${logoBase64 ? `<div style="position: absolute; top: 35%; left: 0; width: 100%; text-align: center; opacity: 0.06; z-index: 0;">
-          <img src="data:image/png;base64,${logoBase64}" style="max-width: 400px;" />
-        </div>` : ""}
+      <div style="font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px;">
+        <h2>Client Information</h2>
+        <p><strong>Name:</strong> ${formData.fullName ?? "N/A"}</p>
+        <p><strong>Phone:</strong> ${formData.phone ?? "N/A"}</p>
+        <p><strong>Email:</strong> ${formData.email ?? "N/A"}</p>
 
-        <div style="position: relative; z-index: 1;">
-          <header style="display: flex; align-items: center; border-bottom: 3px solid #EF7E1A; padding-bottom: 12px; margin-bottom: 20px;">
-            ${logoBase64 ? `<img src="data:image/png;base64,${logoBase64}" alt="Logo" style="max-height: 60px; margin-right: 16px;" />` : ""}
-            <div>
-              <h1 style="margin: 0; font-size: 24px; color: #002147;">Bela Nepal Industries Pvt. Ltd.</h1>
-              <p style="margin: 4px 0 0; color: #444;">www.belanepal.com.np | +977-9802375303</p>
-            </div>
-          </header>
+        <h2>Project Details</h2>
+        <p><strong>Project Type:</strong> ${formData.projectType ?? "N/A"}</p>
+        <p><strong>Project Scope:</strong> ${formData.projectScope ?? "N/A"}</p>
+        <p><strong>Vision:</strong> ${formData.vision ?? "N/A"}</p>
 
-          <div style="columns: 2; -webkit-columns: 2; column-gap: 40px;">
-            <div class="section">
-              <h2>Client Information</h2>
-              <p><strong>Name:</strong> ${formData.fullName ?? "N/A"}</p>
-              <p><strong>Phone:</strong> ${formData.phone ?? "N/A"}</p>
-              <p><strong>Email:</strong> ${formData.email ?? "N/A"}</p>
-            </div>
-
-            <div class="section">
-              <h2>Location</h2>
-              <p><strong>Province:</strong> ${formData.province ?? "N/A"}</p>
-              <p><strong>District:</strong> ${formData.district ?? "N/A"}</p>
-              <p><strong>Municipality:</strong> ${formData.municipality ?? "N/A"}</p>
-              <p><strong>Ward:</strong> ${formData.ward ?? "N/A"}</p>
-            </div>
-
-            <div class="section">
-              <h2>Project Details</h2>
-              <p><strong>Project Type:</strong> ${formData.projectType ?? "N/A"}</p>
-              <p><strong>Project Scope:</strong> ${formData.projectScope ?? "N/A"}</p>
-              <p><strong>Vision:</strong> ${formData.vision ?? "N/A"}</p>
-              <p><strong>Square Footage:</strong> ${formData.squareFootage ?? "N/A"}</p>
-              <p><strong>Land Area:</strong> ${formData.landArea ?? "N/A"}</p>
-              <p><strong>Completion Date:</strong> ${formData.completionDate ?? "N/A"}</p>
-            </div>
-
-            <div class="section">
-              <h2>Site & Design Planning</h2>
-              <p><strong>Storeys:</strong> ${formData.storeys ?? "N/A"}</p>
-              <p><strong>Topography:</strong> ${formData.siteTopography ?? "N/A"}</p>
-              <p><strong>Drainage:</strong> ${formData.waterDrainage ?? "N/A"}</p>
-              <p><strong>Direction:</strong> ${formData.direction ?? "N/A"}</p>
-              <p><strong>Road Type:</strong> ${Array.isArray(formData.roadType) ? formData.roadType.join(", ") : (formData.roadType ?? "N/A")}</p>
-              <p><strong>Road Access Size:</strong> ${formData.roadAccessSize ?? "N/A"}</p>
-            </div>
-
-            <div class="section">
-              <h2>Room Summary</h2>
-              <ul style="margin: 0; padding-left: 20px;">
-                ${Object.entries(rooms).map(([k,v]) => `<li><strong>${k}:</strong> ${v}</li>`).join("")}
-              </ul>
-            </div>
-
-            <div class="section">
-              <h2>Additional Info</h2>
-              <p><strong>Additional Spaces:</strong> ${formData.additionalSpaces ?? "N/A"}</p>
-              <p><strong>Accessibility:</strong> ${formData.accessibility ?? "N/A"}</p>
-              <p><strong>Other Details:</strong> ${formData.otherDetails ?? "N/A"}</p>
-              <p><strong>Heard From:</strong> ${Array.isArray(formData.heardFrom) ? formData.heardFrom.join(", ") : (formData.heardFrom ?? "N/A")}</p>
-            </div>
-          </div>
-
-          <footer style="border-top: 3px solid #EF7E1A; margin-top: 40px; text-align: center; color: #555; font-size: 12px;">
-            <p>&copy; ${new Date().getFullYear()} Bela Nepal Industries Pvt. Ltd. All rights reserved.</p>
-          </footer>
-        </div>
-      </body>
-    </html>
+        <h2>Room Summary</h2>
+        <ul>
+          ${Object.entries(rooms)
+            .map(([key, val]) => `<li><strong>${key}:</strong> ${val}</li>`)
+            .join("")}
+        </ul>
+      </div>
     `;
 
-    // Generate PDF
+    // Generate PDF using Puppeteer
     let pdfBuffer;
     try {
-      const browser = await puppeteer.launch({ headless: "new", args: ["--no-sandbox", "--disable-setuid-sandbox"] });
+      const browser = await puppeteer.launch({
+        headless: "new",
+        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      });
+
       const page = await browser.newPage();
       await page.setContent(emailHtml, { waitUntil: "networkidle0", timeout: 60000 });
 
-      // small wait for images to load
-      await page.evaluate(() => new Promise(res => setTimeout(res, 500)));
+      pdfBuffer = await page.pdf({
+        format: "A4",
+        printBackground: true,
+        margin: { top: "10mm", bottom: "10mm", left: "10mm", right: "10mm" },
+      });
 
-      pdfBuffer = await page.pdf({ format: "A4", printBackground: true, margin: { top: "10mm", bottom: "10mm", left: "10mm", right: "10mm" } });
       await browser.close();
     } catch (pdfErr) {
       console.error("❌ PDF generation failed:", pdfErr.message);
       return res.status(500).json({ success: false, message: "PDF generation failed", error: pdfErr.message });
     }
 
-    // Send email
+    // Nodemailer email
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT) || 587,
@@ -142,25 +76,19 @@ router.post("/submit-form", upload.array("blueprintFiles"), async (req, res) => 
       auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
     });
 
-    try {
-      await transporter.sendMail({
-        from: `"Bela Nepal Website" <${process.env.SMTP_USER}>`,
-        to: process.env.RECEIVER_EMAIL || process.env.SMTP_USER,
-        replyTo: formData.email ?? process.env.SMTP_USER,
-        subject: "New Project Info Submission",
-        html: emailHtml,
-        attachments: [
-          ...files.map(f => ({ filename: f.originalname, content: f.buffer })),
-          { filename: "ProjectSubmission.pdf", content: pdfBuffer },
-        ],
-      });
-    } catch (emailErr) {
-      console.error("❌ Email sending failed:", emailErr.message);
-      return res.status(500).json({ success: false, message: "Email sending failed", error: emailErr.message });
-    }
+    await transporter.sendMail({
+      from: `"Bela Nepal Website" <${process.env.SMTP_USER}>`,
+      to: process.env.RECEIVER_EMAIL || process.env.SMTP_USER,
+      replyTo: formData.email ?? process.env.SMTP_USER,
+      subject: "New Project Info Submission",
+      html: emailHtml,
+      attachments: [
+        ...files.map(({ originalname, buffer }) => ({ filename: originalname, content: buffer })),
+        { filename: "ProjectSubmission.pdf", content: pdfBuffer },
+      ],
+    });
 
     res.json({ success: true, message: "Form submitted and email sent with PDF." });
-
   } catch (err) {
     console.error("🚨 Unexpected error:", err.message);
     res.status(500).json({ success: false, message: "Server error", error: err.message });
