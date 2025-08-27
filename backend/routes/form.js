@@ -5,6 +5,8 @@ const nodemailer = require("nodemailer");
 const PDFDocument = require("pdfkit");
 const streamBuffers = require("stream-buffers");
 const axios = require("axios");
+const fs = require("fs");
+const path = require("path");
 
 const router = express.Router();
 
@@ -25,10 +27,13 @@ router.post("/submit-form", upload.array("blueprintFiles"), async (req, res) => 
       }
     });
 
-    // HTML content for email
-    const emailHtml = `<div style="font-family: Arial, sans-serif;">...</div>`; // keep your previous HTML
+    // HTML content for email (can be simpler)
+    const emailHtml = `<div style="font-family: Arial, sans-serif;">
+      <h2>New Project Submission from ${formData.fullName ?? "N/A"}</h2>
+      <p>See attached PDF for details.</p>
+    </div>`;
 
-    // Fetch logo as buffer
+    // Fetch logo buffer from URL, fallback to local file
     let logoBuffer;
     try {
       const response = await axios.get(
@@ -36,9 +41,16 @@ router.post("/submit-form", upload.array("blueprintFiles"), async (req, res) => 
         { responseType: "arraybuffer" }
       );
       logoBuffer = Buffer.from(response.data, "binary");
+      if (!logoBuffer || logoBuffer.length === 0) throw new Error("Empty buffer");
     } catch (err) {
-      console.warn("⚠️ Failed to fetch logo, PDF will be generated without it.");
-      logoBuffer = null;
+      console.warn("⚠️ Failed to fetch remote logo, using local fallback.");
+      const localLogoPath = path.join(__dirname, "../assets/logo.png"); // Adjust path
+      if (fs.existsSync(localLogoPath)) {
+        logoBuffer = fs.readFileSync(localLogoPath);
+      } else {
+        console.warn("⚠️ Local logo not found, PDF will have no logo.");
+        logoBuffer = null;
+      }
     }
 
     // Generate PDF
@@ -49,9 +61,7 @@ router.post("/submit-form", upload.array("blueprintFiles"), async (req, res) => 
       doc.pipe(writableStream);
 
       // Add logo if available
-      if (logoBuffer) {
-        doc.image(logoBuffer, { width: 150, align: "center" });
-      }
+      if (logoBuffer) doc.image(logoBuffer, { width: 150, align: "center" });
       doc.moveDown();
 
       // Client Information
@@ -95,9 +105,7 @@ router.post("/submit-form", upload.array("blueprintFiles"), async (req, res) => 
 
       // Room Summary
       doc.fontSize(16).text("Room Summary", { underline: true });
-      Object.entries(rooms).forEach(([key, val]) => {
-        doc.fontSize(12).text(`${key}: ${val}`);
-      });
+      Object.entries(rooms).forEach(([key, val]) => doc.fontSize(12).text(`${key}: ${val}`));
       doc.moveDown();
 
       // Additional Info
@@ -107,7 +115,7 @@ router.post("/submit-form", upload.array("blueprintFiles"), async (req, res) => 
         .text(`Accessibility: ${formData.accessibility ?? "N/A"}`)
         .text(`Other Details: ${formData.otherDetails ?? "N/A"}`)
         .text(`Heard From: ${Array.isArray(formData.heardFrom) ? formData.heardFrom.join(", ") : (formData.heardFrom ?? "N/A")}`);
-      
+
       // Footer
       doc.moveDown(2);
       doc.fontSize(10).text(`© ${new Date().getFullYear()} Bela Nepal Industries Pvt. Ltd. All rights reserved.`, { align: "center" });
@@ -119,7 +127,7 @@ router.post("/submit-form", upload.array("blueprintFiles"), async (req, res) => 
       return res.status(500).json({ success: false, message: "PDF generation failed", error: pdfErr.message });
     }
 
-    // Nodemailer email
+    // Send email with PDF and attachments
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT) || 587,
