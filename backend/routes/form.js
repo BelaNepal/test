@@ -2,11 +2,8 @@ require("dotenv").config();
 const express = require("express");
 const multer = require("multer");
 const nodemailer = require("nodemailer");
-const PDFDocument = require("pdfkit");
-const streamBuffers = require("stream-buffers");
+const puppeteer = require("puppeteer");
 const axios = require("axios");
-const fs = require("fs");
-const path = require("path");
 
 const router = express.Router();
 
@@ -27,107 +24,117 @@ router.post("/submit-form", upload.array("blueprintFiles"), async (req, res) => 
       }
     });
 
-    // HTML content for email (can be simpler)
-    const emailHtml = `<div style="font-family: Arial, sans-serif;">
-      <h2>New Project Submission from ${formData.fullName ?? "N/A"}</h2>
-      <p>See attached PDF for details.</p>
-    </div>`;
-
-    // Fetch logo buffer from URL, fallback to local file
-    let logoBuffer;
+    // Fetch logo as base64
+    let logoBase64 = "";
     try {
-      const response = await axios.get(
-        "https://belanepal.com.np/wp-content/uploads/Logo-2.png",
-        { responseType: "arraybuffer" }
-      );
-      logoBuffer = Buffer.from(response.data, "binary");
-      if (!logoBuffer || logoBuffer.length === 0) throw new Error("Empty buffer");
+      const logoResp = await axios.get("https://belanepal.com.np/wp-content/uploads/Logo-2.png", {
+        responseType: "arraybuffer",
+      });
+      logoBase64 = Buffer.from(logoResp.data, "binary").toString("base64");
     } catch (err) {
-      console.warn("⚠️ Failed to fetch remote logo, using local fallback.");
-      const localLogoPath = path.join(__dirname, "../assets/logo.png"); // Adjust path
-      if (fs.existsSync(localLogoPath)) {
-        logoBuffer = fs.readFileSync(localLogoPath);
-      } else {
-        console.warn("⚠️ Local logo not found, PDF will have no logo.");
-        logoBuffer = null;
-      }
+      console.warn("⚠️ Failed to fetch logo for PDF:", err.message);
     }
+
+    // HTML content for email and PDF
+    const emailHtml = `
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Project Submission</title>
+      </head>
+      <body style="font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px; position: relative; min-height: 1200px;">
+        <!-- Watermark -->
+        ${logoBase64 ? `<div style="position: absolute; top: 35%; left: 0; width: 100%; text-align: center; opacity: 0.06; z-index: 0;">
+          <img src="data:image/png;base64,${logoBase64}" style="max-width: 400px;" />
+        </div>` : ""}
+
+        <div style="position: relative; z-index: 1;">
+          <header style="display: flex; align-items: center; border-bottom: 3px solid #EF7E1A; padding-bottom: 12px; margin-bottom: 20px;">
+            ${logoBase64 ? `<img src="data:image/png;base64,${logoBase64}" alt="Logo" style="max-height: 60px; margin-right: 16px;" />` : ""}
+            <div>
+              <h1 style="margin: 0; font-size: 24px; color: #002147;">Bela Nepal Industries Pvt. Ltd.</h1>
+              <p style="margin: 4px 0 0; color: #444;">www.belanepal.com.np | +977-9802375303</p>
+            </div>
+          </header>
+
+          <div style="columns: 2; -webkit-columns: 2; column-gap: 40px;">
+            <div class="section">
+              <h2>Client Information</h2>
+              <p><strong>Name:</strong> ${formData.fullName ?? "N/A"}</p>
+              <p><strong>Phone:</strong> ${formData.phone ?? "N/A"}</p>
+              <p><strong>Email:</strong> ${formData.email ?? "N/A"}</p>
+            </div>
+
+            <div class="section">
+              <h2>Location</h2>
+              <p><strong>Province:</strong> ${formData.province ?? "N/A"}</p>
+              <p><strong>District:</strong> ${formData.district ?? "N/A"}</p>
+              <p><strong>Municipality:</strong> ${formData.municipality ?? "N/A"}</p>
+              <p><strong>Ward:</strong> ${formData.ward ?? "N/A"}</p>
+            </div>
+
+            <div class="section">
+              <h2>Project Details</h2>
+              <p><strong>Project Type:</strong> ${formData.projectType ?? "N/A"}</p>
+              <p><strong>Project Scope:</strong> ${formData.projectScope ?? "N/A"}</p>
+              <p><strong>Vision:</strong> ${formData.vision ?? "N/A"}</p>
+              <p><strong>Square Footage:</strong> ${formData.squareFootage ?? "N/A"}</p>
+              <p><strong>Land Area:</strong> ${formData.landArea ?? "N/A"}</p>
+              <p><strong>Completion Date:</strong> ${formData.completionDate ?? "N/A"}</p>
+            </div>
+
+            <div class="section">
+              <h2>Site & Design Planning</h2>
+              <p><strong>Storeys:</strong> ${formData.storeys ?? "N/A"}</p>
+              <p><strong>Topography:</strong> ${formData.siteTopography ?? "N/A"}</p>
+              <p><strong>Drainage:</strong> ${formData.waterDrainage ?? "N/A"}</p>
+              <p><strong>Direction:</strong> ${formData.direction ?? "N/A"}</p>
+              <p><strong>Road Type:</strong> ${Array.isArray(formData.roadType) ? formData.roadType.join(", ") : (formData.roadType ?? "N/A")}</p>
+              <p><strong>Road Access Size:</strong> ${formData.roadAccessSize ?? "N/A"}</p>
+            </div>
+
+            <div class="section">
+              <h2>Room Summary</h2>
+              <ul style="margin: 0; padding-left: 20px;">
+                ${Object.entries(rooms).map(([k,v]) => `<li><strong>${k}:</strong> ${v}</li>`).join("")}
+              </ul>
+            </div>
+
+            <div class="section">
+              <h2>Additional Info</h2>
+              <p><strong>Additional Spaces:</strong> ${formData.additionalSpaces ?? "N/A"}</p>
+              <p><strong>Accessibility:</strong> ${formData.accessibility ?? "N/A"}</p>
+              <p><strong>Other Details:</strong> ${formData.otherDetails ?? "N/A"}</p>
+              <p><strong>Heard From:</strong> ${Array.isArray(formData.heardFrom) ? formData.heardFrom.join(", ") : (formData.heardFrom ?? "N/A")}</p>
+            </div>
+          </div>
+
+          <footer style="border-top: 3px solid #EF7E1A; margin-top: 40px; text-align: center; color: #555; font-size: 12px;">
+            <p>&copy; ${new Date().getFullYear()} Bela Nepal Industries Pvt. Ltd. All rights reserved.</p>
+          </footer>
+        </div>
+      </body>
+    </html>
+    `;
 
     // Generate PDF
     let pdfBuffer;
     try {
-      const doc = new PDFDocument({ margin: 40 });
-      const writableStream = new streamBuffers.WritableStreamBuffer();
-      doc.pipe(writableStream);
+      const browser = await puppeteer.launch({ headless: "new", args: ["--no-sandbox", "--disable-setuid-sandbox"] });
+      const page = await browser.newPage();
+      await page.setContent(emailHtml, { waitUntil: "networkidle0", timeout: 60000 });
 
-      // Add logo if available
-      if (logoBuffer) doc.image(logoBuffer, { width: 150, align: "center" });
-      doc.moveDown();
+      // small wait for images to load
+      await page.evaluate(() => new Promise(res => setTimeout(res, 500)));
 
-      // Client Information
-      doc.fontSize(16).text("Client Information", { underline: true });
-      doc.fontSize(12)
-        .text(`Name: ${formData.fullName ?? "N/A"}`)
-        .text(`Phone: ${formData.phone ?? "N/A"}`)
-        .text(`Email: ${formData.email ?? "N/A"}`);
-      doc.moveDown();
-
-      // Location
-      doc.fontSize(16).text("Location", { underline: true });
-      doc.fontSize(12)
-        .text(`Province: ${formData.province ?? "N/A"}`)
-        .text(`District: ${formData.district ?? "N/A"}`)
-        .text(`Municipality: ${formData.municipality ?? "N/A"}`)
-        .text(`Ward: ${formData.ward ?? "N/A"}`);
-      doc.moveDown();
-
-      // Project Details
-      doc.fontSize(16).text("Project Details", { underline: true });
-      doc.fontSize(12)
-        .text(`Project Type: ${formData.projectType ?? "N/A"}`)
-        .text(`Project Scope: ${formData.projectScope ?? "N/A"}`)
-        .text(`Vision: ${formData.vision ?? "N/A"}`)
-        .text(`Square Footage: ${formData.squareFootage ?? "N/A"}`)
-        .text(`Land Area: ${formData.landArea ?? "N/A"}`)
-        .text(`Completion Date: ${formData.completionDate ?? "N/A"}`);
-      doc.moveDown();
-
-      // Site & Design Planning
-      doc.fontSize(16).text("Site & Design Planning", { underline: true });
-      doc.fontSize(12)
-        .text(`Storeys: ${formData.storeys ?? "N/A"}`)
-        .text(`Topography: ${formData.siteTopography ?? "N/A"}`)
-        .text(`Drainage: ${formData.waterDrainage ?? "N/A"}`)
-        .text(`Direction: ${formData.direction ?? "N/A"}`)
-        .text(`Road Type: ${Array.isArray(formData.roadType) ? formData.roadType.join(", ") : (formData.roadType ?? "N/A")}`)
-        .text(`Road Access Size: ${formData.roadAccessSize ?? "N/A"}`);
-      doc.moveDown();
-
-      // Room Summary
-      doc.fontSize(16).text("Room Summary", { underline: true });
-      Object.entries(rooms).forEach(([key, val]) => doc.fontSize(12).text(`${key}: ${val}`));
-      doc.moveDown();
-
-      // Additional Info
-      doc.fontSize(16).text("Additional Info", { underline: true });
-      doc.fontSize(12)
-        .text(`Additional Spaces: ${formData.additionalSpaces ?? "N/A"}`)
-        .text(`Accessibility: ${formData.accessibility ?? "N/A"}`)
-        .text(`Other Details: ${formData.otherDetails ?? "N/A"}`)
-        .text(`Heard From: ${Array.isArray(formData.heardFrom) ? formData.heardFrom.join(", ") : (formData.heardFrom ?? "N/A")}`);
-
-      // Footer
-      doc.moveDown(2);
-      doc.fontSize(10).text(`© ${new Date().getFullYear()} Bela Nepal Industries Pvt. Ltd. All rights reserved.`, { align: "center" });
-
-      doc.end();
-      pdfBuffer = writableStream.getContents();
+      pdfBuffer = await page.pdf({ format: "A4", printBackground: true, margin: { top: "10mm", bottom: "10mm", left: "10mm", right: "10mm" } });
+      await browser.close();
     } catch (pdfErr) {
       console.error("❌ PDF generation failed:", pdfErr.message);
       return res.status(500).json({ success: false, message: "PDF generation failed", error: pdfErr.message });
     }
 
-    // Send email with PDF and attachments
+    // Send email
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT) || 587,
@@ -143,7 +150,7 @@ router.post("/submit-form", upload.array("blueprintFiles"), async (req, res) => 
         subject: "New Project Info Submission",
         html: emailHtml,
         attachments: [
-          ...files.map(({ originalname, buffer }) => ({ filename: originalname, content: buffer })),
+          ...files.map(f => ({ filename: f.originalname, content: f.buffer })),
           { filename: "ProjectSubmission.pdf", content: pdfBuffer },
         ],
       });
