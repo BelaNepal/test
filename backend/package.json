@@ -21,8 +21,9 @@
     "lucide-react": "^0.526.0",
     "multer": "^2.0.2",
     "nodemailer": "^7.0.5",
+    "pdfkit": "^0.17.1",
     "pg": "^8.16.0",
-    "puppeteer": "^24.16.2",
+    "stream-buffers": "^3.0.3",
     "uuid": "^11.1.0"
   },
   "devDependencies": {

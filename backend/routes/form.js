@@ -2,7 +2,8 @@ require("dotenv").config();
 const express = require("express");
 const multer = require("multer");
 const nodemailer = require("nodemailer");
-const puppeteer = require("puppeteer");
+const PDFDocument = require("pdfkit"); // Use PDFKit instead of Puppeteer
+const streamBuffers = require("stream-buffers");
 
 const router = express.Router();
 
@@ -23,7 +24,7 @@ router.post("/submit-form", upload.array("blueprintFiles"), async (req, res) => 
       }
     });
 
-    // HTML content with watermark
+    // HTML content for email (kept for email body)
     const emailHtml = `
   <div style="font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px; position: relative;">
     <div style="position: absolute; top: 35%; left: 0; width: 100%; text-align: center; opacity: 0.06; z-index: 0;">
@@ -100,30 +101,68 @@ router.post("/submit-form", upload.array("blueprintFiles"), async (req, res) => 
   </div>
 `;
 
-
-    // Generate PDF with Puppeteer
+    // Generate PDF with PDFKit
     let pdfBuffer;
     try {
-      const browser = await puppeteer.launch({
-        headless: "new",
-        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      const doc = new PDFDocument({ margin: 40 });
+      const writableStream = new streamBuffers.WritableStreamBuffer();
+      doc.pipe(writableStream);
+
+      // Add header/logo
+      doc.image("https://belanepal.com.np/wp-content/uploads/Logo-2.png", { width: 150, align: "center" });
+      doc.moveDown();
+
+      // Add sections (same order as HTML)
+      doc.fontSize(16).text("Client Information", { underline: true });
+      doc.fontSize(12)
+        .text(`Name: ${formData.fullName ?? "N/A"}`)
+        .text(`Phone: ${formData.phone ?? "N/A"}`)
+        .text(`Email: ${formData.email ?? "N/A"}`);
+      doc.moveDown();
+
+      doc.fontSize(16).text("Location", { underline: true });
+      doc.fontSize(12)
+        .text(`Province: ${formData.province ?? "N/A"}`)
+        .text(`District: ${formData.district ?? "N/A"}`)
+        .text(`Municipality: ${formData.municipality ?? "N/A"}`)
+        .text(`Ward: ${formData.ward ?? "N/A"}`);
+      doc.moveDown();
+
+      doc.fontSize(16).text("Project Details", { underline: true });
+      doc.fontSize(12)
+        .text(`Project Type: ${formData.projectType ?? "N/A"}`)
+        .text(`Project Scope: ${formData.projectScope ?? "N/A"}`)
+        .text(`Vision: ${formData.vision ?? "N/A"}`)
+        .text(`Square Footage: ${formData.squareFootage ?? "N/A"}`)
+        .text(`Land Area: ${formData.landArea ?? "N/A"}`)
+        .text(`Completion Date: ${formData.completionDate ?? "N/A"}`);
+      doc.moveDown();
+
+      doc.fontSize(16).text("Site & Design Planning", { underline: true });
+      doc.fontSize(12)
+        .text(`Storeys: ${formData.storeys ?? "N/A"}`)
+        .text(`Topography: ${formData.siteTopography ?? "N/A"}`)
+        .text(`Drainage: ${formData.waterDrainage ?? "N/A"}`)
+        .text(`Direction: ${formData.direction ?? "N/A"}`)
+        .text(`Road Type: ${Array.isArray(formData.roadType) ? formData.roadType.join(", ") : (formData.roadType ?? "N/A")}`)
+        .text(`Road Access Size: ${formData.roadAccessSize ?? "N/A"}`);
+      doc.moveDown();
+
+      doc.fontSize(16).text("Room Summary", { underline: true });
+      Object.entries(rooms).forEach(([key, val]) => {
+        doc.fontSize(12).text(`${key}: ${val}`);
       });
+      doc.moveDown();
 
-      const page = await browser.newPage();
-      await page.setContent(emailHtml, { waitUntil: "networkidle0", timeout: 60000 });
+      doc.fontSize(16).text("Additional Info", { underline: true });
+      doc.fontSize(12)
+        .text(`Additional Spaces: ${formData.additionalSpaces ?? "N/A"}`)
+        .text(`Accessibility: ${formData.accessibility ?? "N/A"}`)
+        .text(`Other Details: ${formData.otherDetails ?? "N/A"}`)
+        .text(`Heard From: ${Array.isArray(formData.heardFrom) ? formData.heardFrom.join(", ") : (formData.heardFrom ?? "N/A")}`);
 
-      pdfBuffer = await page.pdf({
-        format: "A4",
-        printBackground: true,
-        margin: {
-          top: "10mm",
-          bottom: "10mm",
-          left: "10mm",
-          right: "10mm",
-        },
-      });
-
-      await browser.close();
+      doc.end();
+      pdfBuffer = writableStream.getContents();
     } catch (pdfErr) {
       console.error("❌ PDF generation failed:", pdfErr.message);
       return res.status(500).json({ success: false, message: "PDF generation failed", error: pdfErr.message });
