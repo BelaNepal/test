@@ -16,10 +16,14 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // CORS setup
 app.use(cors({
-  origin: "http://192.168.1.97:3000", // your frontend dev origin
+  origin: [
+    "http://192.168.1.97:3000",       // local dev
+    "https://test-ten-wine-43.vercel.app" // Vercel prod
+  ],
   methods: ["POST", "GET"],
   allowedHeaders: ["Content-Type"],
 }));
+
 
 // JSON parser (not used for multipart, but good for other routes)
 app.use(express.json());
