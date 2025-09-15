@@ -23,7 +23,7 @@ router.post("/submit-form", upload.array("blueprintFiles"), async (req, res) => 
       }
     });
 
-    // Full HTML template
+    // Full HTML template (internal notification)
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px;">
         <header style="display: flex; align-items: center; border-bottom: 3px solid #EF7E1A; padding-bottom: 12px; margin-bottom: 20px;">
@@ -61,10 +61,28 @@ router.post("/submit-form", upload.array("blueprintFiles"), async (req, res) => 
       </div>
     `;
 
+    // Confirmation email (to client)
+    const confirmationHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
+        <h2 style="color:#002147;">Thank you for your submission, ${formData.fullName ?? "Client"}!</h2>
+        <p>We’ve received your project information and our team will contact you shortly.</p>
+        <p style="margin-top:20px;">Here’s a quick summary:</p>
+        <ul>
+          <li><strong>Project Type:</strong> ${formData.projectType ?? "N/A"}</li>
+          <li><strong>Phone:</strong> ${formData.phone ?? "N/A"}</li>
+          <li><strong>Email:</strong> ${formData.email ?? "N/A"}</li>
+        </ul>
+        <p style="margin-top:20px;">If you have any urgent questions, feel free to contact us at <a href="mailto:${process.env.SMTP_USER}">${process.env.SMTP_USER}</a>.</p>
+        <footer style="margin-top:20px; font-size:12px; color:#555;">
+          &copy; ${new Date().getFullYear()} Bela Nepal Industries Pvt. Ltd.
+        </footer>
+      </div>
+    `;
+
     // Attempt PDF generation (optional)
     let pdfBuffer = null;
     try {
-      const CHROME_PATH = process.env.CHROME_PATH; // set in Render env if using Puppeteer
+      const CHROME_PATH = process.env.CHROME_PATH;
       const browser = await puppeteer.launch({
         executablePath: CHROME_PATH || undefined,
         args: ["--no-sandbox", "--disable-setuid-sandbox"],
@@ -82,7 +100,7 @@ router.post("/submit-form", upload.array("blueprintFiles"), async (req, res) => 
       console.warn("⚠ PDF generation failed, continuing without PDF:", pdfErr.message);
     }
 
-    // Send email
+    // Email transporter
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT) || 587,
@@ -90,6 +108,7 @@ router.post("/submit-form", upload.array("blueprintFiles"), async (req, res) => 
       auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
     });
 
+    // 1. Send to internal team
     await transporter.sendMail({
       from: `"Bela Nepal Website" <${process.env.SMTP_USER}>`,
       to: process.env.RECEIVER_EMAIL || process.env.SMTP_USER,
@@ -102,7 +121,17 @@ router.post("/submit-form", upload.array("blueprintFiles"), async (req, res) => 
       ],
     });
 
-    res.json({ success: true, message: "Form submitted and email sent." });
+    // 2. Send confirmation to client (if email provided)
+    if (formData.email) {
+      await transporter.sendMail({
+        from: `"Bela Nepal Industries" <${process.env.SMTP_USER}>`,
+        to: formData.email,
+        subject: "We’ve received your project submission",
+        html: confirmationHtml,
+      });
+    }
+
+    res.json({ success: true, message: "Form submitted. Emails sent." });
   } catch (err) {
     console.error("🚨 Form submission error:", err);
     res.status(500).json({ success: false, message: "Server error", error: err.message });
