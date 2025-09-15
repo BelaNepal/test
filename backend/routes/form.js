@@ -67,7 +67,6 @@ router.post("/submit-form", upload.array("blueprintFiles"), async (req, res) => 
       const CHROME_PATH = "/opt/render/.cache/puppeteer/chrome/linux-139.0.7258.138/chrome";
 
       const browser = await puppeteer.launch({
-        executablePath: CHROME_PATH,
         args: ["--no-sandbox", "--disable-setuid-sandbox"],
       });
 
