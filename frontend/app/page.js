@@ -33,14 +33,20 @@ export default function Home() {
         >
           Go to Login
         </Link>
+                <Link
+          href="dashboard/customer-form"
+          className="relative inline-block bg-blue-600 text-white px-6 py-2 rounded-xl shadow-md transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg hover:bg-[#ef7e1f] focus:outline-none focus:ring-2 focus:ring-blue-400"
+        >
+          Customer Form
+        </Link>
       </div>
 
       {/* Right-aligned Nepali Calendar - slightly bigger width */}
-      <div className="relative z-10 w-full md:max-w-lg md:flex-none mt-8">
+      {/* <div className="relative z-10 w-full md:max-w-lg md:flex-none mt-8">
         <div className="scale-95 origin-top">
           <NepaliCalendar />
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

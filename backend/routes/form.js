@@ -23,90 +23,50 @@ router.post("/submit-form", upload.array("blueprintFiles"), async (req, res) => 
       }
     });
 
-    // HTML content with watermark
+    // HTML template
     const emailHtml = `
-  <div style="font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px; position: relative;">
-    <div style="position: absolute; top: 35%; left: 0; width: 100%; text-align: center; opacity: 0.06; z-index: 0;">
-      <img src="https://belanepal.com.np/wp-content/uploads/Logo-2.png" style="max-width: 400px;" />
-    </div>
+      <div style="font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px;">
+        <header style="display: flex; align-items: center; border-bottom: 3px solid #EF7E1A; padding-bottom: 12px; margin-bottom: 20px;">
+          <img src="https://belanepal.com.np/wp-content/uploads/Logo-2.png" alt="Logo" style="max-height:60px; margin-right:16px;" />
+          <div>
+            <h1 style="margin:0; font-size:24px; color:#002147;">Bela Nepal Industries Pvt. Ltd.</h1>
+            <p style="margin:4px 0 0; color:#444;">www.belanepal.com.np | +977-9802375303</p>
+          </div>
+        </header>
 
-    <div style="position: relative; z-index: 1;">
-      <header style="display: flex; align-items: center; border-bottom: 3px solid #EF7E1A; padding-bottom: 12px; margin-bottom: 20px;">
-        <img src="https://belanepal.com.np/wp-content/uploads/Logo-2.png" alt="Bela Nepal Logo" style="max-height: 60px; margin-right: 16px;" />
-        <div>
-          <h1 style="margin: 0; font-size: 24px; color: #002147;">Bela Nepal Industries Pvt. Ltd.</h1>
-          <p style="margin: 4px 0 0; color: #444;">www.belanepal.com.np | +977-9802375303</p>
-        </div>
-      </header>
+        <h2>Client Information</h2>
+        <p><strong>Name:</strong> ${formData.fullName ?? "N/A"}</p>
+        <p><strong>Phone:</strong> ${formData.phone ?? "N/A"}</p>
+        <p><strong>Email:</strong> ${formData.email ?? "N/A"}</p>
 
-      <div style="columns: 2; -webkit-columns: 2; column-gap: 40px;">
-        <div class="section">
-          <h2>Client Information</h2>
-          <p><strong>Name:</strong> ${formData.fullName ?? "N/A"}</p>
-          <p><strong>Phone:</strong> ${formData.phone ?? "N/A"}</p>
-          <p><strong>Email:</strong> ${formData.email ?? "N/A"}</p>
-        </div>
+        <h2>Location</h2>
+        <p><strong>Province:</strong> ${formData.province ?? "N/A"}</p>
+        <p><strong>District:</strong> ${formData.district ?? "N/A"}</p>
+        <p><strong>Municipality:</strong> ${formData.municipality ?? "N/A"}</p>
+        <p><strong>Ward:</strong> ${formData.ward ?? "N/A"}</p>
 
-        <div class="section">
-          <h2>Location</h2>
-          <p><strong>Province:</strong> ${formData.province ?? "N/A"}</p>
-          <p><strong>District:</strong> ${formData.district ?? "N/A"}</p>
-          <p><strong>Municipality:</strong> ${formData.municipality ?? "N/A"}</p>
-          <p><strong>Ward:</strong> ${formData.ward ?? "N/A"}</p>
-        </div>
+        <h2>Project Details</h2>
+        <p><strong>Project Type:</strong> ${formData.projectType ?? "N/A"}</p>
+        <p><strong>Project Scope:</strong> ${formData.projectScope ?? "N/A"}</p>
+        <p><strong>Vision:</strong> ${formData.vision ?? "N/A"}</p>
 
-        <div class="section">
-          <h2>Project Details</h2>
-          <p><strong>Project Type:</strong> ${formData.projectType ?? "N/A"}</p>
-          <p><strong>Project Scope:</strong> ${formData.projectScope ?? "N/A"}</p>
-          <p><strong>Vision:</strong> ${formData.vision ?? "N/A"}</p>
-          <p><strong>Square Footage:</strong> ${formData.squareFootage ?? "N/A"}</p>
-          <p><strong>Land Area:</strong> ${formData.landArea ?? "N/A"}</p>
-          <p><strong>Completion Date:</strong> ${formData.completionDate ?? "N/A"}</p>
-        </div>
+        <h2>Room Summary</h2>
+        <ul>
+          ${Object.entries(rooms).map(([key, val]) => `<li><strong>${key}:</strong> ${val}</li>`).join("")}
+        </ul>
 
-        <div class="section">
-          <h2>Site & Design Planning</h2>
-          <p><strong>Storeys:</strong> ${formData.storeys ?? "N/A"}</p>
-          <p><strong>Topography:</strong> ${formData.siteTopography ?? "N/A"}</p>
-          <p><strong>Drainage:</strong> ${formData.waterDrainage ?? "N/A"}</p>
-          <p><strong>Direction:</strong> ${formData.direction ?? "N/A"}</p>
-          <p><strong>Road Type:</strong> ${Array.isArray(formData.roadType) ? formData.roadType.join(", ") : (formData.roadType ?? "N/A")}</p>
-          <p><strong>Road Access Size:</strong> ${formData.roadAccessSize ?? "N/A"}</p>
-        </div>
-
-        <div class="section">
-          <h2>Room Summary</h2>
-          <ul style="margin: 0; padding-left: 20px;">
-            ${Object.entries(rooms)
-              .map(([key, val]) => `<li><strong>${key}:</strong> ${val}</li>`)
-              .join("")}
-          </ul>
-        </div>
-
-        <div class="section">
-          <h2>Additional Info</h2>
-          <p><strong>Additional Spaces:</strong> ${formData.additionalSpaces ?? "N/A"}</p>
-          <p><strong>Accessibility:</strong> ${formData.accessibility ?? "N/A"}</p>
-          <p><strong>Other Details:</strong> ${formData.otherDetails ?? "N/A"}</p>
-          <p><strong>Heard From:</strong> ${Array.isArray(formData.heardFrom) ? formData.heardFrom.join(", ") : (formData.heardFrom ?? "N/A")}</p>
-        </div>
+        <footer style="border-top:3px solid #EF7E1A; margin-top:40px; text-align:center; color:#555; font-size:12px;">
+          &copy; ${new Date().getFullYear()} Bela Nepal Industries Pvt. Ltd.
+        </footer>
       </div>
+    `;
 
-      <footer style="border-top: 3px solid #EF7E1A; margin-top: 40px; text-align: center; color: #555; font-size: 12px;">
-        <p>&copy; ${new Date().getFullYear()} Bela Nepal Industries Pvt. Ltd. All rights reserved.</p>
-      </footer>
-    </div>
-  </div>
-`;
-
-
-    // Generate PDF with Puppeteer
+    // Puppeteer PDF
     let pdfBuffer;
     try {
       const browser = await puppeteer.launch({
-        headless: "new",
-        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+        headless: true, // "new" can cause issues, use true
+        args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
       });
 
       const page = await browser.newPage();
@@ -115,29 +75,21 @@ router.post("/submit-form", upload.array("blueprintFiles"), async (req, res) => 
       pdfBuffer = await page.pdf({
         format: "A4",
         printBackground: true,
-        margin: {
-          top: "10mm",
-          bottom: "10mm",
-          left: "10mm",
-          right: "10mm",
-        },
+        margin: { top: "10mm", bottom: "10mm", left: "10mm", right: "10mm" },
       });
 
       await browser.close();
     } catch (pdfErr) {
-      console.error("❌ PDF generation failed:", pdfErr.message);
+      console.error("❌ neration failed:", pdfErr);
       return res.status(500).json({ success: false, message: "PDF generation failed", error: pdfErr.message });
     }
 
-    // Nodemailer email setup
+    // Nodemailer
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT) || 587,
       secure: false,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
+      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
     });
 
     try {
@@ -148,24 +100,18 @@ router.post("/submit-form", upload.array("blueprintFiles"), async (req, res) => 
         subject: "New Project Info Submission",
         html: emailHtml,
         attachments: [
-          ...files.map(({ originalname, buffer }) => ({
-            filename: originalname,
-            content: buffer,
-          })),
-          {
-            filename: "ProjectSubmission.pdf",
-            content: pdfBuffer,
-          },
+          ...files.map(({ originalname, buffer }) => ({ filename: originalname, content: buffer })),
+          { filename: "ProjectSubmission.pdf", content: pdfBuffer },
         ],
       });
     } catch (emailErr) {
-      console.error("❌ Email sending failed:", emailErr.message);
+      console.error("❌ Email sending failed:", emailErr);
       return res.status(500).json({ success: false, message: "Email sending failed", error: emailErr.message });
     }
 
     res.json({ success: true, message: "Form submitted and email sent with PDF." });
   } catch (err) {
-    console.error("🚨 Unexpected error:", err.message);
+    console.error("🚨 Unexpected error:", err);
     res.status(500).json({ success: false, message: "Server error", error: err.message });
   }
 });
