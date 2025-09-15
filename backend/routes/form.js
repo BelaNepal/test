@@ -23,7 +23,7 @@ router.post("/submit-form", upload.array("blueprintFiles"), async (req, res) => 
       }
     });
 
-    // HTML template
+    // Full HTML template
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px;">
         <header style="display: flex; align-items: center; border-bottom: 3px solid #EF7E1A; padding-bottom: 12px; margin-bottom: 20px;">
@@ -61,31 +61,28 @@ router.post("/submit-form", upload.array("blueprintFiles"), async (req, res) => 
       </div>
     `;
 
-    // Puppeteer PDF
-    let pdfBuffer;
+    // Attempt PDF generation (optional)
+    let pdfBuffer = null;
     try {
-      const CHROME_PATH = "/opt/render/.cache/puppeteer/chrome/linux-139.0.7258.138/chrome";
-
+      const CHROME_PATH = process.env.CHROME_PATH; // set in Render env if using Puppeteer
       const browser = await puppeteer.launch({
+        executablePath: CHROME_PATH || undefined,
         args: ["--no-sandbox", "--disable-setuid-sandbox"],
+        headless: true,
       });
-
       const page = await browser.newPage();
       await page.setContent(emailHtml, { waitUntil: "networkidle0", timeout: 60000 });
-
       pdfBuffer = await page.pdf({
         format: "A4",
         printBackground: true,
         margin: { top: "10mm", bottom: "10mm", left: "10mm", right: "10mm" },
       });
-
       await browser.close();
     } catch (pdfErr) {
-      console.error("❌ neration failed:", pdfErr);
-      return res.status(500).json({ success: false, message: "PDF generation failed", error: pdfErr.message });
+      console.warn("⚠ PDF generation failed, continuing without PDF:", pdfErr.message);
     }
 
-    // Nodemailer
+    // Send email
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT) || 587,
@@ -93,26 +90,21 @@ router.post("/submit-form", upload.array("blueprintFiles"), async (req, res) => 
       auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
     });
 
-    try {
-      await transporter.sendMail({
-        from: `"Bela Nepal Website" <${process.env.SMTP_USER}>`,
-        to: process.env.RECEIVER_EMAIL || process.env.SMTP_USER,
-        replyTo: formData.email ?? process.env.SMTP_USER,
-        subject: "New Project Info Submission",
-        html: emailHtml,
-        attachments: [
-          ...files.map(({ originalname, buffer }) => ({ filename: originalname, content: buffer })),
-          { filename: "ProjectSubmission.pdf", content: pdfBuffer },
-        ],
-      });
-    } catch (emailErr) {
-      console.error("❌ Email sending failed:", emailErr);
-      return res.status(500).json({ success: false, message: "Email sending failed", error: emailErr.message });
-    }
+    await transporter.sendMail({
+      from: `"Bela Nepal Website" <${process.env.SMTP_USER}>`,
+      to: process.env.RECEIVER_EMAIL || process.env.SMTP_USER,
+      replyTo: formData.email ?? process.env.SMTP_USER,
+      subject: "New Project Info Submission",
+      html: emailHtml,
+      attachments: [
+        ...files.map(({ originalname, buffer }) => ({ filename: originalname, content: buffer })),
+        ...(pdfBuffer ? [{ filename: "ProjectSubmission.pdf", content: pdfBuffer }] : []),
+      ],
+    });
 
-    res.json({ success: true, message: "Form submitted and email sent with PDF." });
+    res.json({ success: true, message: "Form submitted and email sent." });
   } catch (err) {
-    console.error("🚨 Unexpected error:", err);
+    console.error("🚨 Form submission error:", err);
     res.status(500).json({ success: false, message: "Server error", error: err.message });
   }
 });
