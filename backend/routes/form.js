@@ -64,9 +64,11 @@ router.post("/submit-form", upload.array("blueprintFiles"), async (req, res) => 
     // Puppeteer PDF
     let pdfBuffer;
     try {
+      const CHROME_PATH = "/opt/render/.cache/puppeteer/chrome/linux-139.0.7258.138/chrome";
+
       const browser = await puppeteer.launch({
-        headless: true, // "new" can cause issues, use true
-        args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
+        executablePath: CHROME_PATH,
+        args: ["--no-sandbox", "--disable-setuid-sandbox"],
       });
 
       const page = await browser.newPage();
