@@ -72,7 +72,7 @@ router.post("/submit-form", upload.array("blueprintFiles"), async (req, res) => 
           <li><strong>Phone:</strong> ${formData.phone ?? "N/A"}</li>
           <li><strong>Email:</strong> ${formData.email ?? "N/A"}</li>
         </ul>
-        <p style="margin-top:20px;">If you have any urgent questions, feel free to contact us at <a href="mailto:${process.env.SMTP_USER}">${process.env.SMTP_USER}</a>.</p>
+        <p style="margin-top:20px;">If you have any urgent questions, feel free to contact us at 9802375303 or mail us at <a href="mailto:${process.env.SMTP_USER}">${process.env.SMTP_USER}</a>.</p>
         <footer style="margin-top:20px; font-size:12px; color:#555;">
           &copy; ${new Date().getFullYear()} Bela Nepal Industries Pvt. Ltd.
         </footer>
