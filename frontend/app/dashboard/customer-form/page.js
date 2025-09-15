@@ -175,8 +175,8 @@
           });
 
           // Use fetch with multipart/form-data
-          // const response = await fetch("http://localhost:5000/api/submit-form", {
-          const response = await fetch ("https://bela-test.onrender.com/api/submit-form", {
+          const response = await fetch("http://localhost:5000/api/submit-form", {
+         // const response = await fetch ("https://bela-test.onrender.com/api/submit-form", {
             method: "POST",
             body: formPayload,
           });
